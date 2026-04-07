@@ -376,26 +376,26 @@ function KeywordSearch({ onOpenSettings }: KeywordSearchProps) {
             <h2 className="text-lg font-semibold mb-4">기본 정보</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="p-4 bg-dark-bg rounded-lg">
-                <div className="text-dark-muted text-sm mb-1">월간 검색량</div>
-                <div className="text-2xl font-bold text-naver-green">
+                <div className="text-dark-muted text-sm mb-1 whitespace-nowrap">월간 검색량</div>
+                <div className="text-2xl font-bold text-naver-green whitespace-nowrap">
                   {result.search_volume?.total?.toLocaleString() || '-'}
                 </div>
               </div>
               <div className="p-4 bg-dark-bg rounded-lg">
-                <div className="text-dark-muted text-sm mb-1">PC 검색량</div>
-                <div className="text-xl font-medium">
+                <div className="text-dark-muted text-sm mb-1 whitespace-nowrap">PC 검색량</div>
+                <div className="text-xl font-medium whitespace-nowrap">
                   {result.search_volume?.pc?.toLocaleString() || '-'}
                 </div>
               </div>
               <div className="p-4 bg-dark-bg rounded-lg">
-                <div className="text-dark-muted text-sm mb-1">모바일 검색량</div>
-                <div className="text-xl font-medium">
+                <div className="text-dark-muted text-sm mb-1 whitespace-nowrap">모바일 검색량</div>
+                <div className="text-xl font-medium whitespace-nowrap">
                   {result.search_volume?.mobile?.toLocaleString() || '-'}
                 </div>
               </div>
               <div className="p-4 bg-dark-bg rounded-lg">
-                <div className="text-dark-muted text-sm mb-1">파워링크 광고</div>
-                <div className="text-xl font-medium text-red-400">
+                <div className="text-dark-muted text-sm mb-1 whitespace-nowrap">파워링크 광고</div>
+                <div className="text-xl font-medium text-red-400 whitespace-nowrap">
                   {result.ad_count}개
                 </div>
               </div>
@@ -424,7 +424,7 @@ function KeywordSearch({ onOpenSettings }: KeywordSearchProps) {
             <h2 className="text-lg font-semibold mb-4">
               섹션 순서
               {result.ai_recommendation?.exists && (
-                <span className="ml-3 text-sm px-2 py-1 bg-purple-600 rounded">
+                <span className="ml-3 text-sm px-2 py-1 bg-purple-600 rounded whitespace-nowrap">
                   AI 추천 {result.ai_recommendation.section_index}번째
                 </span>
               )}
@@ -435,7 +435,7 @@ function KeywordSearch({ onOpenSettings }: KeywordSearchProps) {
                 const displayType = sectionTypeToKorean[type] || type;
                 const color = sectionColors[type] || sectionColors[displayType] || 'bg-gray-600';
                 return (
-                  <span key={type} className={`${color} text-white text-[10px] px-1.5 py-0.5 rounded flex-shrink-0`}>
+                  <span key={type} className={`${color} text-white text-[10px] px-1.5 py-0.5 rounded flex-shrink-0 whitespace-nowrap`}>
                     {displayType}
                   </span>
                 );
@@ -458,16 +458,16 @@ function KeywordSearch({ onOpenSettings }: KeywordSearchProps) {
                     <span className="w-5 h-5 flex items-center justify-center bg-black/20 rounded-full text-xs font-bold">
                       {section.order}
                     </span>
-                    <span className="font-medium text-sm">{displayType}</span>
+                    <span className="font-medium text-sm whitespace-nowrap">{displayType}</span>
                     {/* 파워링크는 갯수를 더 눈에 띄게 표시 */}
                     {isPowerLink && section.count !== undefined && section.count > 0 && (
-                      <span className="ml-1 px-2 py-0.5 bg-white/20 rounded font-bold text-sm">
+                      <span className="ml-1 px-2 py-0.5 bg-white/20 rounded font-bold text-sm whitespace-nowrap">
                         {section.count}개
                       </span>
                     )}
                     {/* 웹사이트는 블로그/카페/홈페이지 상세 표시 - "(블로그 3, 카페 2, 홈페이지 1)" 형식 */}
                     {isWebsite && section.detail && (section.detail['블로그'] > 0 || section.detail['카페'] > 0 || section.detail['홈페이지'] > 0) && (
-                      <span className="ml-1 text-sm opacity-90">
+                      <span className="ml-1 text-sm opacity-90 whitespace-nowrap">
                         ({[
                           section.detail['블로그'] > 0 ? `블로그 ${section.detail['블로그']}` : null,
                           section.detail['카페'] > 0 ? `카페 ${section.detail['카페']}` : null,
@@ -532,10 +532,10 @@ function KeywordSearch({ onOpenSettings }: KeywordSearchProps) {
                           <tr className="bg-dark-bg/50">
                             <td colSpan={4} className="px-4 py-2">
                               <div className="flex items-center gap-2">
-                                <span className={`px-2 py-0.5 rounded text-xs ${sectionBgColor} text-white font-medium`}>
+                                <span className={`px-2 py-0.5 rounded text-xs ${sectionBgColor} text-white font-medium whitespace-nowrap`}>
                                   {sectionKey}
                                 </span>
-                                <span className="text-dark-muted text-xs">
+                                <span className="text-dark-muted text-xs whitespace-nowrap">
                                   {items.length}개
                                 </span>
                               </div>
@@ -555,7 +555,7 @@ function KeywordSearch({ onOpenSettings }: KeywordSearchProps) {
                                   {item.rank}위
                                 </td>
                                 <td className="px-4 py-3">
-                                  <span className={`px-2 py-1 rounded text-xs ${color.bg} ${color.text}`}>
+                                  <span className={`px-2 py-1 rounded text-xs ${color.bg} ${color.text} whitespace-nowrap`}>
                                     {label}
                                   </span>
                                 </td>
@@ -591,10 +591,10 @@ function KeywordSearch({ onOpenSettings }: KeywordSearchProps) {
                 return (
                   <div
                     key={type}
-                    className={`px-4 py-2 rounded-lg ${color.bg} ${color.text}`}
+                    className={`px-4 py-2 rounded-lg ${color.bg} ${color.text} whitespace-nowrap`}
                   >
-                    <span className="font-medium">{label}</span>
-                    <span className="ml-2 opacity-80">{count}개</span>
+                    <span className="font-medium whitespace-nowrap">{label}</span>
+                    <span className="ml-2 opacity-80 whitespace-nowrap">{count}개</span>
                   </div>
                 );
               })}
