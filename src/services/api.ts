@@ -1,6 +1,6 @@
 import axios, { AxiosError, AxiosResponse } from 'axios';
 
-const API_BASE_URL = 'http://localhost:8000/api';
+const API_BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/api';
 
 // 에러 응답 타입
 export interface ApiErrorDetail {
@@ -557,7 +557,7 @@ export async function restartDriver(): Promise<{ success: boolean; message: stri
 // Health check
 export async function healthCheck(): Promise<boolean> {
   try {
-    const response = await axios.get('http://localhost:8000/health');
+    const response = await axios.get((import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/health');
     return response.status === 200;
   } catch {
     return false;
