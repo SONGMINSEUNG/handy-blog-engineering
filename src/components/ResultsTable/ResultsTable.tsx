@@ -2,6 +2,7 @@ import { AnalysisResult, AdInfo, AIRecommendation, SectionOrder } from '../../se
 
 interface ResultsTableProps {
   results: AnalysisResult[];
+  onKeywordClick?: (keyword: string) => void;
 }
 
 // 타입별 색상 및 라벨 정의
@@ -25,7 +26,7 @@ const typeConfig: Record<string, { label: string; bgColor: string; textColor: st
   influencer: { label: '인플루언서', bgColor: 'bg-rose-600', textColor: 'text-white' },
   website: { label: '웹', bgColor: 'bg-teal-600', textColor: 'text-white' },
   smartstore: { label: '스토어', bgColor: 'bg-orange-500', textColor: 'text-white' },
-  brand_content: { label: '브랜드 콘텐츠', bgColor: 'bg-orange-500', textColor: 'text-white' },
+  brand_content: { label: '블로그 탭', bgColor: 'bg-orange-500', textColor: 'text-white' },
   etc: { label: '기타', bgColor: 'bg-gray-500', textColor: 'text-white' },
   unknown: { label: '웹', bgColor: 'bg-teal-600', textColor: 'text-white' },
 };
@@ -39,9 +40,9 @@ const formatNumber = (num: number | null | undefined): string => {
 // 섹션 타입 라벨 매핑 (섹션 순서 표시용)
 const sectionTypeLabels: Record<string, { label: string; bgColor: string; textColor: string }> = {
   '파워링크': { label: '파워링크', bgColor: 'bg-red-600', textColor: 'text-white' },
-  '브랜드콘텐츠': { label: '브랜드 콘텐츠', bgColor: 'bg-orange-500', textColor: 'text-white' },
-  '브랜드 콘텐츠': { label: '브랜드 콘텐츠', bgColor: 'bg-orange-500', textColor: 'text-white' },
-  'brand_content': { label: '브랜드 콘텐츠', bgColor: 'bg-orange-500', textColor: 'text-white' },
+  '브랜드콘텐츠': { label: '블로그 탭', bgColor: 'bg-orange-500', textColor: 'text-white' },
+  '브랜드 콘텐츠': { label: '블로그 탭', bgColor: 'bg-orange-500', textColor: 'text-white' },
+  'brand_content': { label: '블로그 탭', bgColor: 'bg-orange-500', textColor: 'text-white' },
   '웹사이트': { label: '웹사이트', bgColor: 'bg-teal-600', textColor: 'text-white' },
   '블로그': { label: '블로그', bgColor: 'bg-red-600', textColor: 'text-white' },
   '카페': { label: '카페', bgColor: 'bg-blue-600', textColor: 'text-white' },
@@ -64,7 +65,7 @@ const sectionTypeLabels: Record<string, { label: string; bgColor: string; textCo
   '도서': { label: '도서', bgColor: 'bg-emerald-600', textColor: 'text-white' },
 };
 
-export default function ResultsTable({ results }: ResultsTableProps) {
+export default function ResultsTable({ results, onKeywordClick }: ResultsTableProps) {
   // 전체 결과에서 최대 순위 개수 계산
   const maxRanks = Math.max(...results.map(r => r.top_results?.length || 0), 10);
 
@@ -76,7 +77,8 @@ export default function ResultsTable({ results }: ResultsTableProps) {
             <th className="px-4 py-3 text-left font-medium text-dark-muted whitespace-nowrap sticky left-0 bg-dark-card">키워드</th>
             <th className="px-3 py-3 text-center font-medium text-dark-muted whitespace-nowrap">PC</th>
             <th className="px-3 py-3 text-center font-medium text-dark-muted whitespace-nowrap">모바일</th>
-            <th className="px-3 py-3 text-center font-medium text-dark-muted whitespace-nowrap">총검색량</th>
+            <th className="px-3 py-3 text-center font-medium text-dark-muted whitespace-nowrap">월 검색량</th>
+            <th className="px-3 py-3 text-center font-medium text-dark-muted whitespace-nowrap">월 발행수</th>
             <th className="px-3 py-3 text-center font-medium text-dark-muted whitespace-nowrap">파워링크</th>
             <th className="px-3 py-3 text-center font-medium text-dark-muted whitespace-nowrap">AI추천</th>
             <th className="px-3 py-3 text-left font-medium text-dark-muted whitespace-nowrap min-w-[200px]">섹션순서</th>
@@ -107,6 +109,14 @@ export default function ResultsTable({ results }: ResultsTableProps) {
                 <td className="px-4 py-3 font-medium text-white whitespace-nowrap sticky left-0 bg-inherit">
                   {result.error ? (
                     <span className="text-red-400">{result.keyword}</span>
+                  ) : onKeywordClick ? (
+                    <button
+                      onClick={() => onKeywordClick(result.keyword)}
+                      className="text-naver-green hover:text-green-400 underline underline-offset-2 decoration-naver-green/50 hover:decoration-green-400 cursor-pointer transition font-medium text-left"
+                      title={`"${result.keyword}" 단일 키워드 조회로 이동`}
+                    >
+                      {result.keyword}
+                    </button>
                   ) : (
                     result.keyword
                   )}
@@ -122,9 +132,17 @@ export default function ResultsTable({ results }: ResultsTableProps) {
                   {formatNumber(searchVolume?.mobile)}
                 </td>
 
-                {/* 총 검색량 */}
+                {/* 월 검색량 */}
                 <td className="px-3 py-3 text-center text-gray-300 font-medium">
                   {formatNumber(searchVolume?.total)}
+                </td>
+
+                {/* 월 발행수 */}
+                <td className="px-3 py-3 text-center text-orange-400">
+                  {searchVolume?.monthly_blog_count != null
+                    ? formatNumber(searchVolume.monthly_blog_count)
+                    : <span className="text-gray-500">-</span>
+                  }
                 </td>
 
                 {/* 파워링크 */}

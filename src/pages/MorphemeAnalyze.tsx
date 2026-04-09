@@ -428,13 +428,13 @@ export default function MorphemeAnalyze() {
               </div>
               <div className="p-4 bg-dark-bg rounded-lg text-center">
                 <div className="text-2xl font-bold text-red-400">
-                  {result.forbidden_words?.length || 0}
+                  {[...new Set(result.forbidden_words?.map(f => f.word) || [])].length}
                 </div>
                 <div className="text-sm text-dark-muted">금지어</div>
               </div>
               <div className="p-4 bg-dark-bg rounded-lg text-center">
                 <div className="text-2xl font-bold text-purple-400">
-                  {result.commercial_words?.length || 0}
+                  {[...new Set(result.commercial_words?.map(c => c.word) || [])].length}
                 </div>
                 <div className="text-sm text-dark-muted">상업성</div>
               </div>

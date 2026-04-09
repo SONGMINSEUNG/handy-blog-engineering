@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { diagnosePost, PostDiagnoseResult, ImageAnalyzeResult, ImageItem, FoundKeyword, MorphemeFreq, TopicMatch, HTagItem, ExternalLinkItem } from '../services/api';
+import { diagnosePost, analyzeTopContents, PostDiagnoseResult, ImageAnalyzeResult, ImageItem, FoundKeyword, MorphemeFreq, TopicMatch, HTagItem, ExternalLinkItem, TopContentAnalysisResult, TopContentItem, TopContentRecommendation } from '../services/api';
 
 interface PostDiagnoseProps {
   initialUrl?: string;
@@ -13,6 +13,11 @@ export default function PostDiagnose({ initialUrl, onUrlConsumed }: PostDiagnose
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<PostDiagnoseResult | null>(null);
   const [error, setError] = useState('');
+
+  // 상위노출 콘텐츠 분석 상태
+  const [topContentResult, setTopContentResult] = useState<TopContentAnalysisResult | null>(null);
+  const [topContentLoading, setTopContentLoading] = useState(false);
+  const [topContentError, setTopContentError] = useState('');
 
   // 이미지 분석 데이터 (포스팅 진단 응답에서 추출)
   const imageData: ImageAnalyzeResult | null = result?.image_analysis || null;
@@ -67,6 +72,31 @@ export default function PostDiagnose({ initialUrl, onUrlConsumed }: PostDiagnose
       handleDiagnose();
     }
   };
+
+  // 포스팅 진단 결과가 나오고 타겟 키워드가 있으면 자동으로 상위노출 분석 수행
+  useEffect(() => {
+    if (result && targetKeyword.trim() && !topContentLoading) {
+      const myKeywordCount = result.keyword_count || 0;
+      const myImageCount = result.valid_image_count ?? result.image_count ?? 0;
+
+      setTopContentLoading(true);
+      setTopContentError('');
+      setTopContentResult(null);
+
+      analyzeTopContents(targetKeyword.trim(), myKeywordCount, myImageCount, 5)
+        .then((res) => {
+          setTopContentResult(res);
+        })
+        .catch((err: any) => {
+          setTopContentError(err.response?.data?.detail?.message || err.response?.data?.detail || '상위노출 분석 중 오류가 발생했습니다.');
+        })
+        .finally(() => {
+          setTopContentLoading(false);
+        });
+    }
+  // result가 변경될 때만 실행 (targetKeyword는 진단 시점에 이미 설정됨)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [result]);
 
   // 본문에 키워드 하이라이팅 적용
   const highlightedContent = useMemo(() => {
@@ -200,12 +230,25 @@ export default function PostDiagnose({ initialUrl, onUrlConsumed }: PostDiagnose
                   </div>
                 </div>
                 <div className="flex-1">
-                  <h2 className="text-lg font-semibold mb-1">SEO 점수</h2>
+                  <div className="flex items-center gap-2 mb-1">
+                    <h2 className="text-lg font-semibold">SEO 점수</h2>
+                    {result.seo_score_is_relative && (
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                        상위 평균 대비
+                      </span>
+                    )}
+                  </div>
                   <p className="text-sm text-dark-muted">
-                    {result.seo_score >= 80 ? '매우 좋은 SEO 상태입니다.' :
-                     result.seo_score >= 60 ? '보통 수준의 SEO 상태입니다. 개선 여지가 있습니다.' :
-                     result.seo_score >= 40 ? 'SEO 개선이 필요합니다.' :
-                     'SEO 최적화가 매우 부족합니다. 개선이 시급합니다.'}
+                    {result.seo_score_is_relative
+                      ? (result.seo_score >= 80 ? '상위노출 글 대비 매우 좋은 SEO 상태입니다.' :
+                         result.seo_score >= 60 ? '상위노출 글 대비 보통 수준입니다. 개선 여지가 있습니다.' :
+                         result.seo_score >= 40 ? '상위노출 글 대비 SEO 개선이 필요합니다.' :
+                         '상위노출 글 대비 SEO 최적화가 매우 부족합니다.')
+                      : (result.seo_score >= 80 ? '매우 좋은 SEO 상태입니다.' :
+                         result.seo_score >= 60 ? '보통 수준의 SEO 상태입니다. 개선 여지가 있습니다.' :
+                         result.seo_score >= 40 ? 'SEO 개선이 필요합니다.' :
+                         'SEO 최적화가 매우 부족합니다. 개선이 시급합니다.')
+                    }
                   </p>
                   <div className="mt-2 w-full h-3 bg-dark-bg rounded-full overflow-hidden">
                     <div
@@ -220,6 +263,35 @@ export default function PostDiagnose({ initialUrl, onUrlConsumed }: PostDiagnose
                   </div>
                 </div>
               </div>
+
+              {/* 상대적 점수 항목별 상세 */}
+              {result.seo_score_is_relative && result.seo_score_details && (
+                <div className="mt-4 pt-4 border-t border-dark-border">
+                  <h3 className="text-sm font-medium text-dark-muted mb-3">항목별 점수 (상위 5개 글 평균 대비)</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {Object.entries(result.seo_score_details).map(([key, detail]) => (
+                      <div key={key} className="flex items-center justify-between bg-dark-bg/50 rounded-lg px-3 py-2">
+                        <div className="flex-1">
+                          <div className="text-sm font-medium">{detail.label}</div>
+                          <div className="text-xs text-dark-muted">
+                            {detail.has_keyword !== undefined
+                              ? (detail.has_keyword ? '포함됨' : '미포함')
+                              : `내 ${detail.my_value} / 평균 ${detail.avg_value}`
+                            }
+                          </div>
+                        </div>
+                        <div className={`text-sm font-bold ${
+                          detail.score >= detail.max * 0.8 ? 'text-green-400' :
+                          detail.score >= detail.max * 0.5 ? 'text-yellow-400' :
+                          'text-red-400'
+                        }`}>
+                          {detail.score}/{detail.max}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -308,13 +380,13 @@ export default function PostDiagnose({ initialUrl, onUrlConsumed }: PostDiagnose
               </div>
               <div className="p-3 bg-dark-bg rounded-lg text-center">
                 <div className="text-2xl font-bold text-red-400">
-                  {result.forbidden_words?.length || 0}
+                  {[...new Set(result.forbidden_words?.map(kw => kw.word) || [])].length}
                 </div>
                 <div className="text-xs text-dark-muted">금지어</div>
               </div>
               <div className="p-3 bg-dark-bg rounded-lg text-center">
                 <div className="text-2xl font-bold text-purple-400">
-                  {result.commercial_words?.length || 0}
+                  {[...new Set(result.commercial_words?.map(kw => kw.word) || [])].length}
                 </div>
                 <div className="text-xs text-dark-muted">상업성</div>
               </div>
@@ -357,6 +429,193 @@ export default function PostDiagnose({ initialUrl, onUrlConsumed }: PostDiagnose
                   </div>
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* 상위노출 콘텐츠 분석 */}
+          {targetKeyword.trim() && (
+            <div className="glass-card p-6">
+              <h2 className="text-lg font-semibold mb-4">
+                상위노출 콘텐츠 분석
+                {targetKeyword && <span className="text-sm font-normal text-dark-muted ml-2">"{targetKeyword}"</span>}
+              </h2>
+
+              {topContentLoading && (
+                <div className="flex items-center justify-center py-8">
+                  <div className="w-8 h-8 border-3 border-naver-green border-t-transparent rounded-full animate-spin mr-3"></div>
+                  <span className="text-dark-muted">상위노출 콘텐츠 분석 중...</span>
+                </div>
+              )}
+
+              {topContentError && (
+                <div className="p-3 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 text-sm">
+                  {typeof topContentError === 'string' ? topContentError : '상위노출 분석에 실패했습니다.'}
+                </div>
+              )}
+
+              {topContentResult && !topContentLoading && (
+                <div className="space-y-4">
+                  {/* 행동 방향성 카드 */}
+                  {topContentResult.recommendations.length > 0 && (
+                    <div className="grid grid-cols-2 gap-4">
+                      {topContentResult.recommendations.map((rec: TopContentRecommendation, idx: number) => (
+                        <div
+                          key={idx}
+                          className={`p-4 rounded-lg border ${
+                            rec.severity === 'good'
+                              ? 'bg-green-500/10 border-green-500/30'
+                              : rec.severity === 'danger'
+                              ? 'bg-red-500/10 border-red-500/30'
+                              : rec.severity === 'warning'
+                              ? 'bg-yellow-500/10 border-yellow-500/30'
+                              : 'bg-blue-500/10 border-blue-500/30'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className={`w-3 h-3 rounded-full ${
+                              rec.severity === 'good' ? 'bg-green-500' :
+                              rec.severity === 'danger' ? 'bg-red-500' :
+                              rec.severity === 'warning' ? 'bg-yellow-500' :
+                              'bg-blue-500'
+                            }`}></span>
+                            <span className={`text-sm font-medium ${
+                              rec.severity === 'good' ? 'text-green-400' :
+                              rec.severity === 'danger' ? 'text-red-400' :
+                              rec.severity === 'warning' ? 'text-yellow-400' :
+                              'text-blue-400'
+                            }`}>
+                              {rec.type === 'keyword' ? '키워드' : '사진'}
+                            </span>
+                          </div>
+                          <div className={`text-lg font-bold mb-1 ${
+                            rec.severity === 'good' ? 'text-green-300' :
+                            rec.severity === 'danger' ? 'text-red-300' :
+                            rec.severity === 'warning' ? 'text-yellow-300' :
+                            'text-blue-300'
+                          }`}>
+                            {rec.message}
+                          </div>
+                          <div className="text-xs text-dark-muted">{rec.detail}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* 내 포스팅 vs 상위 평균 비교 바 */}
+                  <div className="p-4 bg-dark-bg rounded-lg">
+                    <h3 className="text-sm font-medium text-dark-muted mb-3">내 포스팅 vs 상위 평균</h3>
+                    <div className="grid grid-cols-3 gap-4 text-center">
+                      <div>
+                        <div className="text-xs text-dark-muted mb-1">키워드 횟수</div>
+                        <div className="flex items-center justify-center gap-2">
+                          <span className="text-lg font-bold text-cyan-400">{topContentResult.my_stats.keyword_count}</span>
+                          <span className="text-dark-muted">/</span>
+                          <span className="text-lg font-bold text-naver-green">{topContentResult.averages.keyword_count}</span>
+                        </div>
+                        <div className="text-[10px] text-dark-muted">내 포스팅 / 상위 평균</div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-dark-muted mb-1">사진 수</div>
+                        <div className="flex items-center justify-center gap-2">
+                          <span className="text-lg font-bold text-cyan-400">{topContentResult.my_stats.image_count}</span>
+                          <span className="text-dark-muted">/</span>
+                          <span className="text-lg font-bold text-naver-green">{topContentResult.averages.image_count}</span>
+                        </div>
+                        <div className="text-[10px] text-dark-muted">내 포스팅 / 상위 평균</div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-dark-muted mb-1">글자 수</div>
+                        <div className="flex items-center justify-center gap-2">
+                          <span className="text-lg font-bold text-cyan-400">{(result.content_length_pure || 0).toLocaleString()}</span>
+                          <span className="text-dark-muted">/</span>
+                          <span className="text-lg font-bold text-naver-green">{topContentResult.averages.content_length.toLocaleString()}</span>
+                        </div>
+                        <div className="text-[10px] text-dark-muted">내 포스팅 / 상위 평균</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 상위 콘텐츠 테이블 */}
+                  {topContentResult.top_contents.length > 0 && (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b border-dark-border">
+                            <th className="px-3 py-2 text-left text-dark-muted">순위</th>
+                            <th className="px-3 py-2 text-left text-dark-muted">제목</th>
+                            <th className="px-3 py-2 text-right text-dark-muted">키워드 횟수</th>
+                            <th className="px-3 py-2 text-right text-dark-muted">사진 수</th>
+                            <th className="px-3 py-2 text-right text-dark-muted">글자 수</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {topContentResult.top_contents.map((item: TopContentItem) => (
+                            <tr key={item.rank} className="border-b border-dark-border/50 hover:bg-dark-hover">
+                              <td className="px-3 py-2">
+                                <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
+                                  item.rank <= 3 ? 'bg-naver-green/20 text-naver-green' : 'bg-dark-bg text-dark-muted'
+                                }`}>
+                                  {item.rank}
+                                </span>
+                              </td>
+                              <td className="px-3 py-2">
+                                <a
+                                  href={item.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-400 hover:underline line-clamp-1"
+                                  title={item.title}
+                                >
+                                  {item.title || '(제목 없음)'}
+                                </a>
+                              </td>
+                              <td className="px-3 py-2 text-right">
+                                <span className="text-cyan-400 font-medium">{item.keyword_count}</span>
+                                <span className="text-dark-muted text-xs ml-1">회</span>
+                              </td>
+                              <td className="px-3 py-2 text-right">
+                                <span className="text-blue-400 font-medium">{item.image_count}</span>
+                                <span className="text-dark-muted text-xs ml-1">장</span>
+                              </td>
+                              <td className="px-3 py-2 text-right">
+                                <span className="text-dark-muted">{item.content_length.toLocaleString()}</span>
+                              </td>
+                            </tr>
+                          ))}
+                          {/* 평균 행 */}
+                          <tr className="border-t-2 border-naver-green/30 bg-naver-green/5">
+                            <td className="px-3 py-2"></td>
+                            <td className="px-3 py-2 font-medium text-naver-green">상위 평균</td>
+                            <td className="px-3 py-2 text-right">
+                              <span className="text-naver-green font-bold">{topContentResult.averages.keyword_count}</span>
+                              <span className="text-dark-muted text-xs ml-1">회</span>
+                            </td>
+                            <td className="px-3 py-2 text-right">
+                              <span className="text-naver-green font-bold">{topContentResult.averages.image_count}</span>
+                              <span className="text-dark-muted text-xs ml-1">장</span>
+                            </td>
+                            <td className="px-3 py-2 text-right">
+                              <span className="text-naver-green font-bold">{topContentResult.averages.content_length.toLocaleString()}</span>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+
+                  {topContentResult.top_contents.length === 0 && !topContentLoading && (
+                    <div className="text-center text-dark-muted py-4 text-sm">
+                      상위노출 블로그 콘텐츠를 찾지 못했습니다.
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {!topContentResult && !topContentLoading && !topContentError && (
+                <div className="text-center text-dark-muted py-4 text-sm">
+                  포스팅 진단 후 자동으로 상위노출 분석이 시작됩니다.
+                </div>
+              )}
             </div>
           )}
 
@@ -561,39 +820,43 @@ export default function PostDiagnose({ initialUrl, onUrlConsumed }: PostDiagnose
             </div>
           )}
 
-          {/* 키워드 탐지 결과 */}
+          {/* 키워드 탐지 결과 (중복 제거: 같은 단어는 1번만 표시) */}
           {((result.forbidden_words?.length || 0) > 0 || (result.commercial_words?.length || 0) > 0) && (
             <div className="glass-card p-6">
               <h2 className="text-lg font-semibold mb-4">탐지된 키워드</h2>
               <div className="grid grid-cols-2 gap-6">
-                {/* 금지어 */}
+                {/* 금지어 (중복 제거) */}
                 <div>
                   <h3 className="text-sm font-medium text-red-400 mb-3 flex items-center gap-2">
                     <span className="w-3 h-3 bg-red-500 rounded-full"></span>
-                    금지어 ({result.forbidden_words?.length || 0}개)
+                    금지어 ({[...new Set(result.forbidden_words?.map(kw => kw.word) || [])].length}종 / 총 {result.forbidden_words?.length || 0}회)
                   </h3>
-                  <div className="space-y-2 max-h-48 overflow-y-auto">
-                    {result.forbidden_words?.map((kw, idx) => (
-                      <div key={idx} className="p-2 bg-red-500/10 rounded text-sm">
-                        <span className="font-medium text-red-300">{kw.word}</span>
-                        <span className="text-dark-muted ml-2">"{kw.context}"</span>
-                      </div>
+                  <div className="flex flex-wrap gap-2">
+                    {[...new Set(result.forbidden_words?.map(kw => kw.word) || [])].map((word, idx) => (
+                      <span key={idx} className="px-3 py-1.5 bg-red-500/20 text-red-300 rounded-lg text-sm font-medium">
+                        {word}
+                        <span className="ml-1 text-xs opacity-60">
+                          ({result.forbidden_words?.filter(kw => kw.word === word).length}회)
+                        </span>
+                      </span>
                     ))}
                   </div>
                 </div>
 
-                {/* 상업성 키워드 */}
+                {/* 상업성 키워드 (중복 제거) */}
                 <div>
                   <h3 className="text-sm font-medium text-purple-400 mb-3 flex items-center gap-2">
                     <span className="w-3 h-3 bg-purple-500 rounded-full"></span>
-                    상업성 키워드 ({result.commercial_words?.length || 0}개)
+                    상업성 키워드 ({[...new Set(result.commercial_words?.map(kw => kw.word) || [])].length}종 / 총 {result.commercial_words?.length || 0}회)
                   </h3>
-                  <div className="space-y-2 max-h-48 overflow-y-auto">
-                    {result.commercial_words?.map((kw, idx) => (
-                      <div key={idx} className="p-2 bg-purple-500/10 rounded text-sm">
-                        <span className="font-medium text-purple-300">{kw.word}</span>
-                        <span className="text-dark-muted ml-2">"{kw.context}"</span>
-                      </div>
+                  <div className="flex flex-wrap gap-2">
+                    {[...new Set(result.commercial_words?.map(kw => kw.word) || [])].map((word, idx) => (
+                      <span key={idx} className="px-3 py-1.5 bg-purple-500/20 text-purple-300 rounded-lg text-sm font-medium">
+                        {word}
+                        <span className="ml-1 text-xs opacity-60">
+                          ({result.commercial_words?.filter(kw => kw.word === word).length}회)
+                        </span>
+                      </span>
                     ))}
                   </div>
                 </div>
@@ -787,40 +1050,35 @@ export default function PostDiagnose({ initialUrl, onUrlConsumed }: PostDiagnose
                   </div>
                 </div>
 
-                {/* 동사 빈도 */}
+                {/* 핵심 키워드 빈도 (타겟 키워드 분석) */}
                 <div>
                   <h3 className="text-sm font-medium text-yellow-400 mb-3 flex items-center gap-2">
                     <span className="w-3 h-3 bg-yellow-500 rounded-full"></span>
-                    동사 빈도 (상위 15개)
+                    핵심 키워드 빈도{targetKeyword ? ` - "${targetKeyword}"` : ''}
                   </h3>
                   <div className="bg-dark-bg rounded-lg overflow-hidden">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="border-b border-dark-border">
-                          <th className="px-3 py-2 text-left text-dark-muted">순위</th>
-                          <th className="px-3 py-2 text-left text-dark-muted">단어</th>
-                          <th className="px-3 py-2 text-right text-dark-muted">횟수</th>
-                          <th className="px-3 py-2 text-right text-dark-muted">비율</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {(result.morpheme_analysis.verb_freq || []).slice(0, 15).map((item: MorphemeFreq, idx: number) => (
-                          <tr key={idx} className="border-b border-dark-border/50 hover:bg-dark-card">
-                            <td className="px-3 py-2 text-dark-muted">{idx + 1}</td>
-                            <td className="px-3 py-2 font-medium">{item.word}</td>
-                            <td className="px-3 py-2 text-right text-yellow-400">{item.count}</td>
-                            <td className="px-3 py-2 text-right text-dark-muted">{item.ratio}%</td>
+                    {result.keyword_breakdown && result.keyword_breakdown.length > 0 ? (
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b border-dark-border">
+                            <th className="px-3 py-2 text-left text-dark-muted">키워드</th>
+                            <th className="px-3 py-2 text-right text-dark-muted">출현 횟수</th>
                           </tr>
-                        ))}
-                        {(!result.morpheme_analysis.verb_freq || result.morpheme_analysis.verb_freq.length === 0) && (
-                          <tr>
-                            <td colSpan={4} className="px-3 py-4 text-center text-dark-muted">
-                              데이터 없음
-                            </td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody>
+                          {result.keyword_breakdown.map((item: { word: string; count: number }, idx: number) => (
+                            <tr key={idx} className="border-b border-dark-border/50 hover:bg-dark-card">
+                              <td className="px-3 py-2 font-medium">{item.word}</td>
+                              <td className="px-3 py-2 text-right text-yellow-400 font-bold">{item.count}회</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    ) : (
+                      <div className="px-3 py-4 text-center text-dark-muted">
+                        타겟 키워드를 입력하면 핵심 키워드 빈도가 표시됩니다.
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

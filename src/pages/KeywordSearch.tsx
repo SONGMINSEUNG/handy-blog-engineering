@@ -19,6 +19,7 @@ import RankBidTable from '../components/BidPrice/RankBidTable';
 // 섹션 타입별 색상
 const sectionColors: Record<string, string> = {
   '파워링크': 'bg-red-600',
+  '블로그 탭': 'bg-orange-500',
   '브랜드콘텐츠': 'bg-orange-500',
   '브랜드 콘텐츠': 'bg-orange-500',
   'brand_content': 'bg-orange-500',
@@ -88,15 +89,16 @@ const typeLabels: Record<string, string> = {
   website: '홈페이지',
   post: '포스트',
   influencer: '인플루언서',
-  brand_content: '브랜드 콘텐츠',
+  brand_content: '블로그 탭',
   recruit: '채용정보',
 };
 
 // 영문 섹션 타입을 한글로 변환하는 매핑
 const sectionTypeToKorean: Record<string, string> = {
   'VIEW': '웹사이트',
-  'brand_content': '브랜드 콘텐츠',
-  '브랜드콘텐츠': '브랜드 콘텐츠',
+  'brand_content': '블로그 탭',
+  '브랜드콘텐츠': '블로그 탭',
+  '브랜드 콘텐츠': '블로그 탭',
 };
 
 // 에러 상태 타입
@@ -108,9 +110,11 @@ interface ErrorState {
 
 interface KeywordSearchProps {
   onOpenSettings?: () => void;
+  initialKeyword?: string;
+  onInitialKeywordConsumed?: () => void;
 }
 
-function KeywordSearch({ onOpenSettings }: KeywordSearchProps) {
+function KeywordSearch({ onOpenSettings, initialKeyword, onInitialKeywordConsumed }: KeywordSearchProps) {
   const [keyword, setKeyword] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
@@ -195,6 +199,23 @@ function KeywordSearch({ onOpenSettings }: KeywordSearchProps) {
     }
   }, [keyword, fetchBidPrice]);
 
+  // 스크래퍼에서 가져온 실제 입찰가 반영
+  const handleScraperDataReceived = useCallback((
+    pcBids: { rank: number; bid: number }[],
+    mobileBids: { rank: number; bid: number }[]
+  ) => {
+    setBidPriceData((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        pc_rank_bids: pcBids.length > 0 ? pcBids : prev.pc_rank_bids,
+        mobile_rank_bids: mobileBids.length > 0 ? mobileBids : prev.mobile_rank_bids,
+        rank_bids_estimated: false,
+        rank_bids_source: 'scraper',
+      };
+    });
+  }, []);
+
   // 설정 모달 열기 핸들러
   const handleOpenSettings = useCallback(() => {
     if (onOpenSettings) {
@@ -250,6 +271,72 @@ function KeywordSearch({ onOpenSettings }: KeywordSearchProps) {
       setRetryCount(0);
     }
   }, [keyword, fetchBidPrice, fetchRelatedKeywords, relatedEnabled]);
+
+  // 대량 조회에서 키워드 클릭으로 넘어온 경우 자동 검색
+  useEffect(() => {
+    if (initialKeyword && initialKeyword.trim()) {
+      const searchKeyword = initialKeyword.trim();
+      setKeyword(searchKeyword);
+
+      // 즉시 검색 실행 (setTimeout 없이 직접 실행하여 cleanup 취소 문제 방지)
+      setLoading(true);
+      setError(null);
+      setRetryCount(0);
+      setBidPriceError(null);
+
+      // consumed 콜백은 검색 시작 후 호출하여 타이밍 이슈 방지
+      onInitialKeywordConsumed?.();
+
+      withRetry(
+        () => analyzeSERP([searchKeyword]),
+        {
+          maxRetries: 3,
+          baseDelay: 1000,
+          onRetry: (attempt: number) => {
+            setRetryCount(attempt);
+          },
+        }
+      )
+        .then(async (response) => {
+          if (response.results && response.results.length > 0) {
+            setResult(response.results[0]);
+
+            // API 설정 상태를 최신으로 확인한 뒤 입찰가/연관키워드 조회
+            try {
+              const settings = await getNaverAdSettings();
+              if (settings.is_configured) {
+                getBidPrice(searchKeyword).then(setBidPriceData).catch((err: unknown) => {
+                  const parsed = parseApiError(err);
+                  setBidPriceError(parsed.message);
+                });
+                if (relatedEnabled) {
+                  setRelatedLoading(true);
+                  getRelatedKeywords(searchKeyword).then(setRelatedKeywords).catch((err: unknown) => {
+                    const parsed = parseApiError(err);
+                    setRelatedError(parsed.message);
+                  }).finally(() => setRelatedLoading(false));
+                }
+              }
+            } catch {
+              // API 설정 확인 실패 시 무시
+            }
+          }
+        })
+        .catch((err: unknown) => {
+          const parsed = parseApiError(err);
+          setError({
+            message: parsed.message,
+            errorCode: parsed.errorCode,
+            retryable: parsed.retryable,
+          });
+        })
+        .finally(() => {
+          setLoading(false);
+          setRetryCount(0);
+        });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialKeyword]);
 
   // 브라우저 재시작 핸들러
   const handleRestartDriver = useCallback(async () => {
@@ -400,6 +487,18 @@ function KeywordSearch({ onOpenSettings }: KeywordSearchProps) {
                 </div>
               </div>
             </div>
+            {/* 추가 정보: 월 발행수 */}
+            {result.search_volume?.monthly_blog_count != null && (
+              <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="p-4 bg-dark-bg rounded-lg">
+                  <div className="text-dark-muted text-sm mb-1 whitespace-nowrap">월 발행수</div>
+                  <div className="text-xl font-medium text-orange-400 whitespace-nowrap">
+                    {result.search_volume.monthly_blog_count.toLocaleString()}건
+                  </div>
+                  <div className="text-dark-muted text-[10px] mt-1">최근 1개월 블로그 글</div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* 입찰가 정보 */}
@@ -417,6 +516,7 @@ function KeywordSearch({ onOpenSettings }: KeywordSearchProps) {
             data={bidPriceData}
             loading={bidPriceLoading}
             isApiConfigured={isApiConfigured}
+            onScraperDataReceived={handleScraperDataReceived}
           />
 
           {/* 섹션 순서 */}
@@ -482,6 +582,103 @@ function KeywordSearch({ onOpenSettings }: KeywordSearchProps) {
               })}
             </div>
           </div>
+
+
+          {/* 상위노출 블로그 키워드 빈도 분석 */}
+          {result.top_blog_keyword_analysis && result.top_blog_keyword_analysis.length > 0 && (() => {
+            const analysis = result.top_blog_keyword_analysis!;
+            // 키워드 목록 추출 (첫 번째 항목의 키워드 키 사용)
+            const keywordKeys = Object.keys(analysis[0].keyword_counts);
+            // 각 키워드별 평균 계산
+            const averages: Record<string, number> = {};
+            for (const key of keywordKeys) {
+              const sum = analysis.reduce((acc, item) => acc + (item.keyword_counts[key] || 0), 0);
+              averages[key] = Math.round((sum / analysis.length) * 10) / 10;
+            }
+            return (
+              <div className="glass-card p-6">
+                <h2 className="text-lg font-semibold mb-4">
+                  상위노출 블로그 키워드 빈도
+                  <span className="ml-2 text-sm text-dark-muted font-normal">
+                    상위 {analysis.length}개 블로그 본문 분석
+                  </span>
+                </h2>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-dark-border">
+                        <th className="px-4 py-2 text-left text-dark-muted w-16">#</th>
+                        <th className="px-4 py-2 text-left text-dark-muted">블로그</th>
+                        {keywordKeys.map((key) => (
+                          <th key={key} className="px-4 py-2 text-center text-dark-muted whitespace-nowrap">
+                            {key}
+                          </th>
+                        ))}
+                        <th className="px-4 py-2 text-right text-dark-muted">글자수</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {analysis.map((item) => (
+                        <tr key={item.rank} className="border-b border-dark-border/30 hover:bg-dark-hover">
+                          <td className="px-4 py-3 font-bold text-naver-green whitespace-nowrap">
+                            {item.rank}위
+                            {item.is_ad && (
+                              <span className="ml-1 text-[10px] px-1 py-0.5 bg-red-500/20 text-red-400 rounded">광고</span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 max-w-[200px]">
+                            <a
+                              href={item.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-400 hover:underline truncate block"
+                              title={item.title}
+                            >
+                              {item.title ? (item.title.length > 25 ? item.title.slice(0, 25) + '...' : item.title) : '(제목 없음)'}
+                            </a>
+                          </td>
+                          {keywordKeys.map((key) => {
+                            const count = item.keyword_counts[key] || 0;
+                            const avg = averages[key];
+                            const isAboveAvg = count >= avg;
+                            return (
+                              <td key={key} className="px-4 py-3 text-center">
+                                <span className={`font-mono font-medium ${
+                                  count === 0 ? 'text-dark-muted' : isAboveAvg ? 'text-naver-green' : 'text-white'
+                                }`}>
+                                  {count}
+                                </span>
+                              </td>
+                            );
+                          })}
+                          <td className="px-4 py-3 text-right font-mono text-dark-muted">
+                            {item.content_length.toLocaleString()}
+                          </td>
+                        </tr>
+                      ))}
+                      {/* 평균 행 */}
+                      <tr className="border-t-2 border-dark-border bg-dark-bg/50">
+                        <td className="px-4 py-3 font-bold text-yellow-400" colSpan={2}>
+                          평균
+                        </td>
+                        {keywordKeys.map((key) => (
+                          <td key={key} className="px-4 py-3 text-center font-mono font-bold text-yellow-400">
+                            {averages[key]}
+                          </td>
+                        ))}
+                        <td className="px-4 py-3 text-right font-mono font-bold text-yellow-400">
+                          {Math.round(analysis.reduce((acc, item) => acc + item.content_length, 0) / analysis.length).toLocaleString()}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <p className="text-dark-muted text-xs mt-3">
+                  * 상위노출 블로그 본문에서 키워드가 등장한 횟수입니다. (공백 무관 매칭)
+                </p>
+              </div>
+            );
+          })()}
 
           {/* 상위노출 순서 */}
           <div className="glass-card p-6">
@@ -660,7 +857,7 @@ function KeywordSearch({ onOpenSettings }: KeywordSearchProps) {
                         <th className="px-4 py-2 text-left text-dark-muted">키워드</th>
                         <th className="px-4 py-2 text-right text-dark-muted">PC 검색량</th>
                         <th className="px-4 py-2 text-right text-dark-muted">모바일 검색량</th>
-                        <th className="px-4 py-2 text-right text-dark-muted">총 검색량</th>
+                        <th className="px-4 py-2 text-right text-dark-muted">월 검색량</th>
                       </tr>
                     </thead>
                     <tbody>

@@ -235,6 +235,7 @@ export interface SearchVolume {
   mobile: number | null;
   competition: string | null;
   note?: string;
+  monthly_blog_count?: number | null;  // 최근 1개월 블로그 발행수
 }
 
 // 상위노출 결과 아이템
@@ -269,6 +270,16 @@ export interface SectionOrder {
   detail?: Record<string, number>;
 }
 
+// 상위노출 블로그 키워드 빈도 분석 항목
+export interface TopBlogKeywordItem {
+  rank: number;
+  url: string;
+  title: string;
+  keyword_counts: Record<string, number>;
+  content_length: number;
+  is_ad?: boolean;
+}
+
 // 분석 결과
 export interface AnalysisResult {
   keyword: string;
@@ -279,6 +290,8 @@ export interface AnalysisResult {
   section_order?: SectionOrder[];
   top_results: TopResult[];
   section_counts: Record<string, number>;
+  keyword_in_titles?: Record<string, number>;
+  top_blog_keyword_analysis?: TopBlogKeywordItem[];
   error?: string;
 }
 
@@ -293,6 +306,8 @@ export interface BlogInfo {
   today_visitors: number;
   profile_image: string;
   description: string;
+  daily_visitors?: Record<string, number>;  // YYYYMMDD -> count
+  monthly_post_count?: number;  // 최근 30일 발행수
 }
 
 // 블로그 게시물
@@ -303,6 +318,15 @@ export interface BlogPost {
   comment_count: number;
   like_count: number;
   summary: string;
+  is_notice?: boolean;
+}
+
+// 방문자 히스토리 항목 (DB 누적 데이터)
+export interface VisitorHistoryItem {
+  date: string;           // YYYY-MM-DD
+  visitor_count: number;  // 해당일 방문자수
+  total_visitor: number;  // 전체 방문자수
+  subscriber_count: number; // 이웃/구독자수
 }
 
 // 블로그 진단 결과
@@ -310,6 +334,7 @@ export interface BlogDiagnoseResult {
   blog_id: string;
   blog_info: BlogInfo;
   posts: BlogPost[];
+  visitor_history?: VisitorHistoryItem[];  // DB 누적 방문자 히스토리
   error?: string;
 }
 
@@ -407,8 +432,24 @@ export interface PostDiagnoseResult {
   h_tags?: HTagItem[];                      // H-tag 구조
   keyword_density?: number;                 // 키워드 밀도 (%)
   keyword_count?: number;                   // 키워드 반복 횟수
+  keyword_breakdown?: Array<{ word: string; count: number }>;  // 핵심 키워드 빈도
   external_links?: ExternalLinkItem[];      // 외부 링크 목록
   seo_score?: number;                       // SEO 점수 (0-100)
+  seo_score_is_relative?: boolean;          // 상대적 점수 여부 (상위노출 대비)
+  seo_score_details?: Record<string, {      // SEO 점수 항목별 상세
+    score: number;
+    max: number;
+    label: string;
+    my_value?: number;
+    avg_value?: number;
+    has_keyword?: boolean;
+  }>;
+  top_averages?: {                          // 상위노출 평균 데이터
+    keyword_count: number;
+    image_count: number;
+    content_length: number;
+    keyword_density: number;
+  };
   image_analysis?: ImageAnalyzeResult | null;  // 이미지 분석 결과 (포스팅 진단 통합)
   char_stats?: {
     total: number;
@@ -417,6 +458,40 @@ export interface PostDiagnoseResult {
     digit: number;
   };
   error?: string;
+}
+
+// 상위노출 콘텐츠 분석 결과
+export interface TopContentItem {
+  rank: number;
+  url: string;
+  title: string;
+  keyword_count: number;
+  title_keyword_count: number;
+  image_count: number;
+  content_length: number;
+}
+
+export interface TopContentRecommendation {
+  type: 'keyword' | 'image';
+  status: 'good' | 'insufficient' | 'excessive';
+  message: string;
+  detail: string;
+  severity: 'good' | 'info' | 'warning' | 'danger';
+}
+
+export interface TopContentAnalysisResult {
+  keyword: string;
+  top_contents: TopContentItem[];
+  averages: {
+    keyword_count: number;
+    image_count: number;
+    content_length: number;
+  };
+  my_stats: {
+    keyword_count: number;
+    image_count: number;
+  };
+  recommendations: TopContentRecommendation[];
 }
 
 // 형태소 분석 결과
@@ -565,8 +640,8 @@ export async function healthCheck(): Promise<boolean> {
 }
 
 // Blog Diagnose
-export async function diagnoseBlog(blogId: string): Promise<BlogDiagnoseResult> {
-  const response = await api.post('/blog/diagnose', { blog_id: blogId });
+export async function diagnoseBlog(blogId: string, count: number = 30): Promise<BlogDiagnoseResult> {
+  const response = await api.post('/blog/diagnose', { blog_id: blogId, count });
   return response.data;
 }
 
@@ -575,6 +650,22 @@ export async function diagnosePost(url: string, targetKeyword?: string): Promise
   const response = await api.post('/post/diagnose', {
     url,
     target_keyword: targetKeyword || null,
+  });
+  return response.data;
+}
+
+// Top Content Analysis (상위노출 콘텐츠 분석)
+export async function analyzeTopContents(
+  keyword: string,
+  myKeywordCount: number,
+  myImageCount: number,
+  topN: number = 5
+): Promise<TopContentAnalysisResult> {
+  const response = await api.post('/post/top-contents', {
+    keyword,
+    my_keyword_count: myKeywordCount,
+    my_image_count: myImageCount,
+    top_n: topN,
   });
   return response.data;
 }
@@ -643,6 +734,10 @@ export interface BidPriceData {
   mobile_rank_bids: { rank: number; bid: number }[];
   // 추정 여부
   rank_bids_estimated?: boolean;
+  // 입찰가 출처 (api/scraper/estimated)
+  rank_bids_source?: string | null;
+  // 변형 키워드(공백 제거) 데이터
+  variant_data?: BidPriceData | null;
   // 에러
   error?: string | null;
 }
@@ -696,6 +791,10 @@ export async function getBidPrice(keyword: string): Promise<BidPriceData> {
     mobile_rank_bids: data.mobile_rank_bids ?? [],
     // 추정 여부
     rank_bids_estimated: data.rank_bids_estimated ?? false,
+    // 입찰가 출처
+    rank_bids_source: data.rank_bids_source ?? null,
+    // 변형 키워드(공백 제거) 데이터
+    variant_data: data.variant_data ?? null,
     // 에러
     error: data.error ?? null,
   };
@@ -742,6 +841,83 @@ export async function saveNaverAdSettings(settings: NaverAdSettings): Promise<vo
 // 네이버 광고 API 설정 조회
 export async function getNaverAdSettings(): Promise<NaverAdSettingsStatus> {
   const response = await api.get('/settings/naver-ad');
+  return response.data;
+}
+
+// ========================================
+// 순위별 입찰가 스크래핑 (검색광고 관리 시스템)
+// ========================================
+
+// 스크래퍼 로그인 상태 타입
+export interface ScraperLoginStatus {
+  logged_in: boolean;
+  message: string;
+  scraper_active: boolean;
+  error_code?: string | null;
+}
+
+// 스크래핑 키워드별 결과 타입
+export interface RankScrapeKeywordResult {
+  keyword: string;
+  pc: Record<string, number | null>;
+  mobile: Record<string, number | null>;
+  error?: string | null;
+}
+
+// 스크래핑 응답 타입
+export interface RankScrapeResponse {
+  results: Record<string, RankScrapeKeywordResult>;
+  total_keywords: number;
+  success_count: number;
+  error_count: number;
+}
+
+// 스크래퍼 로그인 창 열기
+export async function openScraperLogin(): Promise<{
+  status: string;
+  message: string;
+  logged_in: boolean;
+}> {
+  const response = await api.post('/bid/rank-scrape/login/open');
+  return response.data;
+}
+
+// 스크래퍼 로그인 상태 확인
+export async function getScraperLoginStatus(): Promise<ScraperLoginStatus> {
+  const response = await api.get('/bid/rank-scrape/login/status');
+  return response.data;
+}
+
+// 스크래퍼 로그인 완료 대기
+export async function confirmScraperLogin(): Promise<{
+  success: boolean;
+  message: string;
+}> {
+  const response = await api.post('/bid/rank-scrape/login/confirm');
+  return response.data;
+}
+
+// 스크래핑으로 순위별 입찰가 조회
+export async function scrapeRankBids(keywords: string[]): Promise<RankScrapeResponse> {
+  const response = await api.post('/bid/rank-scrape', { keywords });
+  return response.data;
+}
+
+// 스크래퍼 브라우저 종료
+export async function closeScraperBrowser(): Promise<{
+  status: string;
+  message: string;
+}> {
+  const response = await api.post('/bid/rank-scrape/close');
+  return response.data;
+}
+
+// 스크래퍼 상태 조회
+export async function getScraperStatus(): Promise<{
+  is_active: boolean;
+  is_logged_in: boolean;
+}> {
+  const response = await api.get('/bid/rank-scrape/status');
   return response.data;
 }
 

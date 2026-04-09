@@ -22,6 +22,10 @@ export interface BidPriceData {
   mobile_rank_bids: { rank: number; bid: number }[];
   // 추정 여부
   rank_bids_estimated?: boolean;
+  // 입찰가 출처 (api/scraper/estimated)
+  rank_bids_source?: string | null;
+  // 변형 키워드(공백 제거) 데이터
+  variant_data?: BidPriceData | null;
   // 에러
   error?: string | null;
 }
@@ -347,9 +351,84 @@ function BidPriceSection({
         </div>
       </div>
 
+      {/* 변형 키워드(공백 제거) 정보 */}
+      {data.variant_data && (
+        <div className="mt-6 pt-6 border-t border-dark-border">
+          <h3 className="text-base font-semibold mb-4">
+            변형 키워드
+            <span className="ml-2 text-naver-green font-normal">"{data.variant_data.keyword}"</span>
+            <span className="ml-2 text-xs text-dark-muted font-normal">(공백 제거)</span>
+          </h3>
+
+          {/* 변형 키워드 검색량 테이블 */}
+          <div className="overflow-x-auto mb-4">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-dark-border">
+                  <th className="px-4 py-2 text-left text-dark-muted">구분</th>
+                  <th className="px-4 py-2 text-right text-dark-muted">PC</th>
+                  <th className="px-4 py-2 text-right text-dark-muted">모바일</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b border-dark-border/50 hover:bg-dark-hover transition">
+                  <td className="px-4 py-3 text-dark-muted">월간 검색량</td>
+                  <td className="px-4 py-3 text-right text-white font-medium">
+                    {formatNumber(data.variant_data.pc_search_volume)}
+                  </td>
+                  <td className="px-4 py-3 text-right text-white font-medium">
+                    {formatNumber(data.variant_data.mobile_search_volume)}
+                  </td>
+                </tr>
+                <tr className="border-b border-dark-border/50 hover:bg-dark-hover transition">
+                  <td className="px-4 py-3 text-dark-muted">월간 클릭수</td>
+                  <td className="px-4 py-3 text-right text-white font-medium">
+                    {formatNumber(data.variant_data.pc_click_count)}
+                  </td>
+                  <td className="px-4 py-3 text-right text-white font-medium">
+                    {formatNumber(data.variant_data.mobile_click_count)}
+                  </td>
+                </tr>
+                <tr className="border-b border-dark-border/50 hover:bg-dark-hover transition">
+                  <td className="px-4 py-3 text-dark-muted">클릭률</td>
+                  <td className="px-4 py-3 text-right text-white font-medium">
+                    {formatPercent(data.variant_data.pc_click_rate)}
+                  </td>
+                  <td className="px-4 py-3 text-right text-white font-medium">
+                    {formatPercent(data.variant_data.mobile_click_rate)}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          {/* 변형 키워드 경쟁 정도 및 최소 입찰가 */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="p-4 bg-dark-bg rounded-lg">
+              <div className="text-dark-muted text-sm mb-2">경쟁 정도</div>
+              <div className="flex items-center gap-2">
+                <CompetitionBadge competition={data.variant_data.competition} />
+              </div>
+            </div>
+            <div className="p-4 bg-dark-bg rounded-lg">
+              <div className="text-dark-muted text-sm mb-1">PC 최소 입찰가</div>
+              <div className="text-2xl font-bold text-naver-green">
+                {formatPrice(data.variant_data.pc_minimum_bid)}
+              </div>
+            </div>
+            <div className="p-4 bg-dark-bg rounded-lg">
+              <div className="text-dark-muted text-sm mb-1">모바일 최소 입찰가</div>
+              <div className="text-2xl font-bold text-naver-green">
+                {formatPrice(data.variant_data.mobile_minimum_bid)}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* 부분 에러 표시 (일부 데이터만 실패한 경우) */}
       {data.error && (
-        <div className="p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg text-yellow-400 text-sm">
+        <div className="p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg text-yellow-400 text-sm mt-4">
           <span className="font-medium">참고:</span> {data.error}
         </div>
       )}

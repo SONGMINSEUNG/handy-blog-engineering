@@ -393,6 +393,13 @@ function App() {
     setActiveTab('post');
   }, []);
 
+  // 대량 조회 결과에서 키워드 클릭 시 단일 키워드 조회 탭으로 이동
+  const [batchToKeyword, setBatchToKeyword] = useState<string>('');
+  const handleKeywordClick = useCallback((keyword: string) => {
+    setBatchToKeyword(keyword);
+    setActiveTab('keyword');
+  }, []);
+
   // 탭 목록
   const tabs: Array<{ id: TabType; label: string; icon: string }> = [
     { id: 'keyword', label: '키워드 조회', icon: 'M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z' },
@@ -619,7 +626,13 @@ function App() {
         {appStatus !== 'connecting' && appStatus !== 'error' && (
           <div className="flex-1 overflow-auto">
             {/* 키워드 조회 */}
-            {activeTab === 'keyword' && <KeywordSearch onOpenSettings={handleOpenSettings} />}
+            {activeTab === 'keyword' && (
+              <KeywordSearch
+                onOpenSettings={handleOpenSettings}
+                initialKeyword={batchToKeyword}
+                onInitialKeywordConsumed={() => setBatchToKeyword('')}
+              />
+            )}
 
             {/* 순위 추적 */}
             {activeTab === 'rank' && <RankTracker userId={authUser.id} />}
@@ -763,7 +776,7 @@ function App() {
 
                     {/* 테이블 - 이전 결과 + 현재 결과 */}
                     <div className="flex-1 overflow-auto">
-                      <ResultsTable results={[...allResults, ...results]} />
+                      <ResultsTable results={[...allResults, ...results]} onKeywordClick={handleKeywordClick} />
 
                       {/* 연관 키워드 섹션 */}
                       {isApiConfigured && (
@@ -827,7 +840,7 @@ function App() {
                                           <th className="px-4 py-2 text-left text-dark-muted">키워드</th>
                                           <th className="px-4 py-2 text-right text-dark-muted">PC 검색량</th>
                                           <th className="px-4 py-2 text-right text-dark-muted">모바일 검색량</th>
-                                          <th className="px-4 py-2 text-right text-dark-muted">총 검색량</th>
+                                          <th className="px-4 py-2 text-right text-dark-muted">월 검색량</th>
                                         </tr>
                                       </thead>
                                       <tbody>
