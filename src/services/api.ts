@@ -245,6 +245,8 @@ export interface TopResult {
   type: string;
   title: string;
   url: string;
+  is_ad?: boolean;
+  section?: string;
 }
 
 // 광고 정보

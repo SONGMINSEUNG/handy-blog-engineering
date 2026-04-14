@@ -26,7 +26,7 @@ const typeConfig: Record<string, { label: string; bgColor: string; textColor: st
   influencer: { label: '인플루언서', bgColor: 'bg-rose-600', textColor: 'text-white' },
   website: { label: '웹', bgColor: 'bg-teal-600', textColor: 'text-white' },
   smartstore: { label: '스토어', bgColor: 'bg-orange-500', textColor: 'text-white' },
-  brand_content: { label: '블로그 탭', bgColor: 'bg-orange-500', textColor: 'text-white' },
+  brand_content: { label: '브랜드콘텐츠(광고)', bgColor: 'bg-red-500', textColor: 'text-white' },
   etc: { label: '기타', bgColor: 'bg-gray-500', textColor: 'text-white' },
   unknown: { label: '웹', bgColor: 'bg-teal-600', textColor: 'text-white' },
 };
@@ -40,9 +40,9 @@ const formatNumber = (num: number | null | undefined): string => {
 // 섹션 타입 라벨 매핑 (섹션 순서 표시용)
 const sectionTypeLabels: Record<string, { label: string; bgColor: string; textColor: string }> = {
   '파워링크': { label: '파워링크', bgColor: 'bg-red-600', textColor: 'text-white' },
-  '브랜드콘텐츠': { label: '블로그 탭', bgColor: 'bg-orange-500', textColor: 'text-white' },
-  '브랜드 콘텐츠': { label: '블로그 탭', bgColor: 'bg-orange-500', textColor: 'text-white' },
-  'brand_content': { label: '블로그 탭', bgColor: 'bg-orange-500', textColor: 'text-white' },
+  '브랜드콘텐츠': { label: '브랜드콘텐츠(광고)', bgColor: 'bg-red-500', textColor: 'text-white' },
+  '브랜드 콘텐츠': { label: '브랜드콘텐츠(광고)', bgColor: 'bg-red-500', textColor: 'text-white' },
+  'brand_content': { label: '브랜드콘텐츠(광고)', bgColor: 'bg-red-500', textColor: 'text-white' },
   '웹사이트': { label: '웹사이트', bgColor: 'bg-teal-600', textColor: 'text-white' },
   '블로그': { label: '블로그', bgColor: 'bg-red-600', textColor: 'text-white' },
   '카페': { label: '카페', bgColor: 'bg-blue-600', textColor: 'text-white' },

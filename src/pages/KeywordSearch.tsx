@@ -12,6 +12,7 @@ import {
   BidPriceData,
   RelatedKeywordsResponse,
   RelatedKeywordItem,
+  TopResult,
 } from '../services/api';
 import BidPriceSection from '../components/BidPrice/BidPriceSection';
 import RankBidTable from '../components/BidPrice/RankBidTable';
@@ -19,10 +20,11 @@ import RankBidTable from '../components/BidPrice/RankBidTable';
 // 섹션 타입별 색상
 const sectionColors: Record<string, string> = {
   '파워링크': 'bg-red-600',
-  '블로그 탭': 'bg-orange-500',
-  '브랜드콘텐츠': 'bg-orange-500',
-  '브랜드 콘텐츠': 'bg-orange-500',
-  'brand_content': 'bg-orange-500',
+  '인기글': 'bg-emerald-500',
+  '브랜드콘텐츠': 'bg-red-500',
+  '브랜드콘텐츠 (광고)': 'bg-red-500',
+  '브랜드 콘텐츠': 'bg-red-500',
+  'brand_content': 'bg-red-500',
   'AI 추천': 'bg-purple-600',
   'AI 섹션': 'bg-purple-600',
   'AI': 'bg-purple-600',
@@ -42,7 +44,6 @@ const sectionColors: Record<string, string> = {
   '인플루언서': 'bg-rose-600',
   '나무위키': 'bg-green-700',
   '위키백과': 'bg-gray-600',
-  '인기글': 'bg-orange-500',
   '채용정보': 'bg-sky-600',
   '학술정보': 'bg-violet-600',
   '지식플러스': 'bg-yellow-600',
@@ -61,6 +62,8 @@ const typeColors: Record<string, { bg: string; text: string }> = {
   smartstore: { bg: 'bg-orange-500', text: 'text-white' },
   youtube: { bg: 'bg-red-500', text: 'text-white' },
   naver_tv: { bg: 'bg-green-600', text: 'text-white' },
+  clip: { bg: 'bg-pink-500', text: 'text-white' },
+  ai: { bg: 'bg-violet-500', text: 'text-white' },
   namuwiki: { bg: 'bg-green-700', text: 'text-white' },
   wikipedia: { bg: 'bg-gray-600', text: 'text-white' },
   encyclopedia: { bg: 'bg-amber-600', text: 'text-white' },
@@ -82,6 +85,8 @@ const typeLabels: Record<string, string> = {
   smartstore: '스마트스토어',
   youtube: '유튜브',
   naver_tv: 'TV',
+  clip: '영상',
+  ai: 'AI',
   namuwiki: '나무위키',
   wikipedia: '위키',
   encyclopedia: '백과',
@@ -89,16 +94,17 @@ const typeLabels: Record<string, string> = {
   website: '홈페이지',
   post: '포스트',
   influencer: '인플루언서',
-  brand_content: '블로그 탭',
+  brand_content: '브랜드콘텐츠 (광고)',
   recruit: '채용정보',
 };
 
 // 영문 섹션 타입을 한글로 변환하는 매핑
 const sectionTypeToKorean: Record<string, string> = {
   'VIEW': '웹사이트',
-  'brand_content': '블로그 탭',
-  '브랜드콘텐츠': '블로그 탭',
-  '브랜드 콘텐츠': '블로그 탭',
+  'brand_content': '브랜드콘텐츠 (광고)',
+  '브랜드콘텐츠': '브랜드콘텐츠 (광고)',
+  '브랜드 콘텐츠': '브랜드콘텐츠 (광고)',
+  '인기글': '인기글',
 };
 
 // 에러 상태 타입
@@ -132,6 +138,9 @@ function KeywordSearch({ onOpenSettings, initialKeyword, onInitialKeywordConsume
   const [relatedKeywords, setRelatedKeywords] = useState<RelatedKeywordsResponse | null>(null);
   const [relatedLoading, setRelatedLoading] = useState(false);
   const [relatedError, setRelatedError] = useState<string | null>(null);
+
+  // 연관 키워드 클릭 시 자동 검색용
+  const [pendingSearch, setPendingSearch] = useState<string>('');
 
   // 연관 키워드 토글 (localStorage 저장)
   const [relatedEnabled, setRelatedEnabled] = useState<boolean>(() => {
@@ -271,6 +280,14 @@ function KeywordSearch({ onOpenSettings, initialKeyword, onInitialKeywordConsume
       setRetryCount(0);
     }
   }, [keyword, fetchBidPrice, fetchRelatedKeywords, relatedEnabled]);
+
+  // 연관 키워드 클릭 시 자동 검색
+  useEffect(() => {
+    if (pendingSearch && pendingSearch.trim()) {
+      setPendingSearch('');
+      handleSearch();
+    }
+  }, [keyword, pendingSearch]); // keyword가 업데이트된 후 실행
 
   // 대량 조회에서 키워드 클릭으로 넘어온 경우 자동 검색
   useEffect(() => {
@@ -697,31 +714,63 @@ function KeywordSearch({ onOpenSettings, initialKeyword, onInitialKeywordConsume
                   {(() => {
                     if (!result.top_results) return null;
 
-                    // 섹션 그룹 키 결정: blog/cafe/website/smartstore -> '웹사이트', 나머지 -> typeLabels
-                    const getSectionKey = (type: string) => {
-                      if (['blog', 'cafe', 'website', 'smartstore'].includes(type)) return '웹사이트';
-                      return typeLabels[type] || type;
+                    // 섹션 그룹 키 결정
+                    const getSectionKey = (item: TopResult) => {
+                      if (item.section) {
+                        // "웹사이트 영역 N"은 "웹사이트 영역"으로 통일 (연속이면 합쳐지고, 중간에 다른 게 있으면 분리)
+                        if (item.section.startsWith('웹사이트 영역')) return '웹사이트 영역';
+                        return item.section;
+                      }
+                      if (item.type === 'news') return '뉴스';
+                      if (item.type === 'kin') return '지식iN';
+                      if (item.type === 'place') return '플레이스';
+                      if (item.type === 'clip') return '네이버 클립';
+                      if (item.type === 'shopping' || item.type === 'smartstore') return '쇼핑';
+                      if (item.type === 'youtube' || item.type === 'naver_tv') return '동영상';
+                      return '웹사이트 영역';
                     };
 
-                    // 섹션별로 그룹화 (등장 순서 유지)
+                    // 섹션별로 그룹화 (연속된 같은 섹션은 합치고, 중간에 다른 게 있으면 분리)
                     const groupOrder: string[] = [];
                     const groups: Record<string, typeof result.top_results> = {};
+                    let lastKey = '';
 
                     for (const item of result.top_results) {
-                      const key = getSectionKey(item.type);
-                      if (!groups[key]) {
-                        groups[key] = [];
-                        groupOrder.push(key);
+                      let key = getSectionKey(item);
+                      // 이전 섹션과 같으면 같은 그룹에 추가
+                      if (key === lastKey) {
+                        groups[groupOrder[groupOrder.length - 1]].push(item);
+                      } else {
+                        // 새 그룹 생성 (같은 이름이 이전에 있었으면 번호 붙이기)
+                        let uniqueKey = key;
+                        let counter = 2;
+                        while (groups[uniqueKey]) {
+                          uniqueKey = key + ' ' + counter;
+                          counter++;
+                        }
+                        groups[uniqueKey] = [item];
+                        groupOrder.push(uniqueKey);
+                        lastKey = key;
                       }
-                      groups[key].push(item);
                     }
 
                     return groupOrder.map((sectionKey) => {
                       const items = groups[sectionKey];
                       // 섹션 색상
                       const firstItem = items[0];
-                      const isViewType = ['blog', 'cafe', 'website', 'smartstore'].includes(firstItem.type);
-                      const sectionBgColor = isViewType ? 'bg-blue-600' : (typeColors[firstItem.type]?.bg || 'bg-gray-600');
+                      // 섹션별 색상
+                      let sectionBgColor = 'bg-gray-600';
+                      if (sectionKey.startsWith('블로그 탭')) sectionBgColor = 'bg-emerald-600';
+                      else if (sectionKey === '브랜드콘텐츠') sectionBgColor = 'bg-red-600';
+                      else if (sectionKey === '웹사이트 영역') sectionBgColor = 'bg-blue-600';
+                      else if (sectionKey === '플레이스') sectionBgColor = 'bg-orange-600';
+                      else if (sectionKey === 'AI 검색') sectionBgColor = 'bg-violet-600';
+                      else if (sectionKey === '네이버 클립') sectionBgColor = 'bg-pink-600';
+                      else if (sectionKey === '쇼핑') sectionBgColor = 'bg-yellow-600';
+                      else if (sectionKey === '뉴스') sectionBgColor = 'bg-purple-600';
+                      else if (sectionKey === '동영상') sectionBgColor = 'bg-pink-600';
+                      else if (sectionKey === '지식iN') sectionBgColor = 'bg-amber-600';
+                      else sectionBgColor = sectionColors[sectionKey] || typeColors[firstItem.type]?.bg || 'bg-gray-600';
 
                       return (
                         <React.Fragment key={sectionKey}>
@@ -730,7 +779,7 @@ function KeywordSearch({ onOpenSettings, initialKeyword, onInitialKeywordConsume
                             <td colSpan={4} className="px-4 py-2">
                               <div className="flex items-center gap-2">
                                 <span className={`px-2 py-0.5 rounded text-xs ${sectionBgColor} text-white font-medium whitespace-nowrap`}>
-                                  {sectionKey}
+                                  {sectionKey.replace(/ \d+$/, '')}
                                 </span>
                                 <span className="text-dark-muted text-xs whitespace-nowrap">
                                   {items.length}개
@@ -755,6 +804,11 @@ function KeywordSearch({ onOpenSettings, initialKeyword, onInitialKeywordConsume
                                   <span className={`px-2 py-1 rounded text-xs ${color.bg} ${color.text} whitespace-nowrap`}>
                                     {label}
                                   </span>
+                                  {item.is_ad && (
+                                    <span className="ml-1 px-1.5 py-0.5 rounded text-[10px] bg-red-500/20 text-red-400 whitespace-nowrap">
+                                      광고
+                                    </span>
+                                  )}
                                 </td>
                                 <td className="px-4 py-3">
                                   <a
@@ -877,13 +931,23 @@ function KeywordSearch({ onOpenSettings, initialKeyword, onInitialKeywordConsume
                           >
                             <td className="px-4 py-2.5 text-dark-muted">{idx + 1}</td>
                             <td className="px-4 py-2.5">
-                              <span className={`${isOriginal ? 'text-naver-green font-bold' : isTop ? 'text-yellow-400 font-medium' : 'text-white'}`}>
-                                {item.keyword}
-                              </span>
-                              {isOriginal && (
-                                <span className="ml-2 text-xs px-1.5 py-0.5 bg-naver-green/20 text-naver-green rounded">
-                                  현재
+                              {isOriginal ? (
+                                <span className="text-naver-green font-bold">
+                                  {item.keyword}
+                                  <span className="ml-2 text-xs px-1.5 py-0.5 bg-naver-green/20 text-naver-green rounded">
+                                    현재
+                                  </span>
                                 </span>
+                              ) : (
+                                <button
+                                  onClick={() => {
+                                    setKeyword(item.keyword);
+                                    setPendingSearch(item.keyword);
+                                  }}
+                                  className={`${isTop ? 'text-yellow-400 font-medium' : 'text-white'} hover:text-naver-green hover:underline cursor-pointer bg-transparent border-none p-0 text-left`}
+                                >
+                                  {item.keyword}
+                                </button>
                               )}
                             </td>
                             <td className="px-4 py-2.5 text-right font-mono">

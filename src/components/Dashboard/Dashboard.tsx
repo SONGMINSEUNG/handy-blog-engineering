@@ -24,7 +24,7 @@ export default function Dashboard({ result }: DashboardProps) {
     encyclopedia: { label: '지식백과', color: 'text-amber-400', bgColor: 'bg-amber-600' },
     post: { label: '포스트', color: 'text-lime-400', bgColor: 'bg-lime-500' },
     influencer: { label: '인플루언서', color: 'text-rose-400', bgColor: 'bg-rose-500' },
-    brand_content: { label: '블로그 탭', color: 'text-orange-400', bgColor: 'bg-orange-500' },
+    brand_content: { label: '브랜드콘텐츠(광고)', color: 'text-red-400', bgColor: 'bg-red-500' },
     unknown: { label: '기타', color: 'text-gray-400', bgColor: 'bg-gray-500' },
   };
 
