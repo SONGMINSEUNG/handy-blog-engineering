@@ -221,7 +221,7 @@ export default function MorphemeAnalyze() {
               }
             }}
             onPaste={handlePaste}
-            placeholder="분석할 텍스트를 입력하세요... (이미지 붙여넣기도 가능합니다)"
+            placeholder="블로그 글을 복사+붙여넣기 하세요. (Tip: 블로그에서 스크롤을 맨 아래까지 내린 후 복사해야 이미지가 모두 포함됩니다)"
             rows={8}
             className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-lg text-white placeholder-dark-muted focus:outline-none focus:border-naver-green resize-none"
           />
