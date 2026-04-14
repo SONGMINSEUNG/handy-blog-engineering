@@ -672,6 +672,18 @@ export async function analyzeTopContents(
   return response.data;
 }
 
+// Morpheme - Fetch blog content by URL
+export interface FetchBlogContentResult {
+  text: string;
+  image_count: number;
+  title: string;
+}
+
+export async function fetchBlogContent(url: string): Promise<FetchBlogContentResult> {
+  const response = await api.post('/morpheme/fetch-content', { url });
+  return response.data;
+}
+
 // Morpheme Analysis
 export async function analyzeMorpheme(text: string, targetKeyword?: string): Promise<MorphemeResult> {
   const response = await api.post('/morpheme/analyze', {

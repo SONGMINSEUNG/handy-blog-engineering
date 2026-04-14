@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
-import { analyzeMorpheme, MorphemeResult, FoundKeyword } from '../services/api';
+import { analyzeMorpheme, fetchBlogContent, MorphemeResult, FoundKeyword } from '../services/api';
 import { ImagePreviewGrid } from '../components/ImagePreviewGrid';
 
 // OG 링크 미리보기 블록 제거 (도메인 라인 + 인접 제목/설명)
@@ -48,6 +48,34 @@ export default function MorphemeAnalyze() {
   const [result, setResult] = useState<MorphemeResult | null>(null);
   const [pastedImages, setPastedImages] = useState<string[]>([]);
   const [error, setError] = useState('');
+
+  // URL 가져오기 상태
+  const [blogUrl, setBlogUrl] = useState('');
+  const [fetchLoading, setFetchLoading] = useState(false);
+  const [fetchedImageCount, setFetchedImageCount] = useState<number | null>(null);
+
+  // URL로 블로그 콘텐츠 가져오기
+  const handleFetchContent = useCallback(async () => {
+    if (!blogUrl.trim()) {
+      setError('블로그 URL을 입력해주세요.');
+      return;
+    }
+    setFetchLoading(true);
+    setError('');
+    try {
+      const data = await fetchBlogContent(blogUrl.trim());
+      setText(data.text);
+      setFetchedImageCount(data.image_count);
+      // 가져온 이미지 수를 pastedImages 대신 별도 표시
+      setPastedImages([]);
+    } catch (err: any) {
+      const detail = err.response?.data?.detail;
+      const msg = typeof detail === 'object' ? detail.message : detail;
+      setError(msg || '블로그 콘텐츠를 가져오는 중 오류가 발생했습니다.');
+    } finally {
+      setFetchLoading(false);
+    }
+  }, [blogUrl]);
 
   // OG 링크 요소 제거 함수 (네이버 블로그 삽입 링크 미리보기)
   const removeOgLinkElements = useCallback((doc: Document) => {
@@ -201,6 +229,35 @@ export default function MorphemeAnalyze() {
     <div className="p-6 max-w-6xl mx-auto">
       <h1 className="text-2xl font-bold mb-6">형태소 진단</h1>
 
+      {/* 블로그 URL 가져오기 */}
+      <div className="glass-card p-4 mb-4">
+        <label className="block text-sm font-medium text-dark-muted mb-2">
+          블로그 URL로 가져오기 (선택)
+        </label>
+        <div className="flex gap-3">
+          <input
+            type="text"
+            value={blogUrl}
+            onChange={(e) => setBlogUrl(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') handleFetchContent(); }}
+            placeholder="https://blog.naver.com/blogid/123456789"
+            className="flex-1 px-4 py-2.5 bg-dark-bg border border-dark-border rounded-lg text-white placeholder-dark-muted focus:outline-none focus:border-naver-green text-sm"
+          />
+          <button
+            onClick={handleFetchContent}
+            disabled={fetchLoading}
+            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-lg disabled:opacity-50 transition text-sm whitespace-nowrap"
+          >
+            {fetchLoading ? '가져오는 중...' : '가져오기'}
+          </button>
+        </div>
+        {fetchedImageCount !== null && (
+          <div className="mt-2 text-xs text-dark-muted">
+            블로그에서 가져온 이미지: <span className="text-naver-green font-medium">{fetchedImageCount}개</span>
+          </div>
+        )}
+      </div>
+
       {/* 텍스트 입력 */}
       <div className="glass-card p-6 mb-6">
         <div className="mb-4">
@@ -218,6 +275,7 @@ export default function MorphemeAnalyze() {
                   if (url.startsWith('blob:')) URL.revokeObjectURL(url);
                 });
                 setPastedImages([]);
+                setFetchedImageCount(null);
               }
             }}
             onPaste={handlePaste}
