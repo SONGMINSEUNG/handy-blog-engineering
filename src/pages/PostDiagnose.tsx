@@ -169,7 +169,7 @@ export default function PostDiagnose({ initialUrl, onUrlConsumed }: PostDiagnose
             value={targetKeyword}
             onChange={(e) => setTargetKeyword(e.target.value)}
             placeholder="SEO 분석 대상 키워드를 입력하세요..."
-            className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-lg text-white placeholder-dark-muted focus:outline-none focus:border-naver-green"
+            className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-lg text-dark-text placeholder-dark-muted focus:outline-none focus:border-naver-green"
           />
         </div>
         <div className="flex gap-4">
@@ -179,7 +179,7 @@ export default function PostDiagnose({ initialUrl, onUrlConsumed }: PostDiagnose
             onChange={(e) => setUrl(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="포스트 URL 입력... (예: https://blog.naver.com/blogid/123456789)"
-            className="flex-1 px-4 py-3 bg-dark-bg border border-dark-border rounded-lg text-white placeholder-dark-muted focus:outline-none focus:border-naver-green"
+            className="flex-1 px-4 py-3 bg-dark-bg border border-dark-border rounded-lg text-dark-text placeholder-dark-muted focus:outline-none focus:border-naver-green"
           />
           <button
             onClick={handleDiagnose}
@@ -922,7 +922,7 @@ export default function PostDiagnose({ initialUrl, onUrlConsumed }: PostDiagnose
           {imageData && imageData.images.length > 0 && (
             <div className="glass-card p-6">
               <details>
-                <summary className="cursor-pointer text-sm text-dark-muted hover:text-white transition">
+                <summary className="cursor-pointer text-sm text-dark-muted hover:text-dark-text transition">
                   이미지 상세 목록 보기 ({imageData.images.length}개)
                 </summary>
                 <div className="mt-4 overflow-x-auto max-h-96 overflow-y-auto">

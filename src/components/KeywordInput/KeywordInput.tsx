@@ -42,7 +42,7 @@ export default function KeywordInput({ keywords, onKeywordsChange }: KeywordInpu
         분석할 키워드 ({keywords.length}개)
       </label>
 
-      <div className="flex flex-wrap gap-2 p-3 bg-dark-bg rounded-lg border border-dark-border min-h-[56px]">
+      <div className="flex flex-wrap gap-2 p-4 bg-dark-bg rounded-lg border border-dark-border min-h-[80px] w-full">
         {keywords.map((keyword, index) => (
           <span
             key={index}
@@ -51,7 +51,7 @@ export default function KeywordInput({ keywords, onKeywordsChange }: KeywordInpu
             {keyword}
             <button
               onClick={() => removeKeyword(index)}
-              className="hover:text-white transition"
+              className="hover:text-dark-text transition"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -67,7 +67,7 @@ export default function KeywordInput({ keywords, onKeywordsChange }: KeywordInpu
           onCompositionStart={handleCompositionStart}
           onCompositionEnd={handleCompositionEnd}
           placeholder={keywords.length === 0 ? "키워드를 입력하고 Enter를 누르세요..." : ""}
-          className="flex-1 min-w-[200px] bg-transparent outline-none text-white placeholder-dark-muted"
+          className="flex-1 min-w-[200px] bg-transparent outline-none text-dark-text placeholder-dark-muted"
         />
       </div>
 

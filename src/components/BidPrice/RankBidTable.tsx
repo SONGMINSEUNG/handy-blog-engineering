@@ -255,7 +255,7 @@ function RankBidTable({ data, loading, isApiConfigured, onScraperDataReceived }:
                         {rank}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-right text-white font-medium">
+                    <td className="px-4 py-3 text-right text-dark-text font-medium">
                       {data?.rank_bids_estimated && pcBid != null ? (
                         <span>
                           {pcBid.toLocaleString()}원
@@ -263,7 +263,7 @@ function RankBidTable({ data, loading, isApiConfigured, onScraperDataReceived }:
                         </span>
                       ) : formatPrice(pcBid)}
                     </td>
-                    <td className="px-4 py-3 text-right text-white font-medium">
+                    <td className="px-4 py-3 text-right text-dark-text font-medium">
                       {data?.rank_bids_estimated && mobileBid != null ? (
                         <span>
                           {mobileBid.toLocaleString()}원

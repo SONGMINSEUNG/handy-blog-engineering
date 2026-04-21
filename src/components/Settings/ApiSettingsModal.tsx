@@ -148,7 +148,7 @@ function ApiSettingsModal({ isOpen, onClose, onSaveSuccess }: ApiSettingsModalPr
             className="p-1 hover:bg-dark-hover rounded-lg transition"
           >
             <svg
-              className="w-5 h-5 text-dark-muted hover:text-white"
+              className="w-5 h-5 text-dark-muted hover:text-dark-text"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -181,7 +181,7 @@ function ApiSettingsModal({ isOpen, onClose, onSaveSuccess }: ApiSettingsModalPr
                   value={settings.customer_id}
                   onChange={handleChange('customer_id')}
                   placeholder="네이버 광고 고객 ID"
-                  className="w-full px-3 py-2 bg-dark-bg border border-dark-border rounded-lg text-white placeholder-dark-muted focus:outline-none focus:border-naver-green transition"
+                  className="w-full px-3 py-2 bg-dark-bg border border-dark-border rounded-lg text-dark-text placeholder-dark-muted focus:outline-none focus:border-naver-green transition"
                 />
               </div>
 
@@ -195,7 +195,7 @@ function ApiSettingsModal({ isOpen, onClose, onSaveSuccess }: ApiSettingsModalPr
                   value={settings.api_key}
                   onChange={handleChange('api_key')}
                   placeholder="API 액세스 라이센스"
-                  className="w-full px-3 py-2 bg-dark-bg border border-dark-border rounded-lg text-white placeholder-dark-muted focus:outline-none focus:border-naver-green transition"
+                  className="w-full px-3 py-2 bg-dark-bg border border-dark-border rounded-lg text-dark-text placeholder-dark-muted focus:outline-none focus:border-naver-green transition"
                 />
               </div>
 
@@ -210,12 +210,12 @@ function ApiSettingsModal({ isOpen, onClose, onSaveSuccess }: ApiSettingsModalPr
                     value={settings.secret_key}
                     onChange={handleChange('secret_key')}
                     placeholder="API 비밀키"
-                    className="w-full px-3 py-2 pr-16 bg-dark-bg border border-dark-border rounded-lg text-white placeholder-dark-muted focus:outline-none focus:border-naver-green transition"
+                    className="w-full px-3 py-2 pr-16 bg-dark-bg border border-dark-border rounded-lg text-dark-text placeholder-dark-muted focus:outline-none focus:border-naver-green transition"
                   />
                   <button
                     type="button"
                     onClick={() => setShowSecretKey(!showSecretKey)}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 px-2 py-1 text-xs text-dark-muted hover:text-white transition"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 px-2 py-1 text-xs text-dark-muted hover:text-dark-text transition"
                   >
                     {showSecretKey ? '숨기기' : '보기'}
                   </button>
@@ -256,7 +256,7 @@ function ApiSettingsModal({ isOpen, onClose, onSaveSuccess }: ApiSettingsModalPr
           <button
             onClick={handleTest}
             disabled={isTesting || isLoading}
-            className="px-4 py-2 bg-dark-border hover:bg-dark-hover text-white font-medium rounded-lg transition disabled:opacity-50"
+            className="px-4 py-2 bg-dark-border hover:bg-dark-hover text-dark-text font-medium rounded-lg transition disabled:opacity-50"
           >
             {isTesting ? (
               <span className="flex items-center gap-2">

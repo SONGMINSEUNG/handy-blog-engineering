@@ -106,7 +106,7 @@ export default function ResultsTable({ results, onKeywordClick }: ResultsTablePr
                 }`}
               >
                 {/* 키워드 */}
-                <td className="px-4 py-3 font-medium text-white whitespace-nowrap sticky left-0 bg-inherit">
+                <td className="px-4 py-3 font-medium text-dark-text whitespace-nowrap sticky left-0 bg-inherit">
                   {result.error ? (
                     <span className="text-red-400">{result.keyword}</span>
                   ) : onKeywordClick ? (

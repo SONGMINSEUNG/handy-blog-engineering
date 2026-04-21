@@ -588,7 +588,7 @@ function RankTracker({ userId }: RankTrackerProps) {
               className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm cursor-pointer transition ${
                 activeBlogId === acc
                   ? 'bg-naver-green text-white'
-                  : 'bg-dark-bg border border-dark-border text-dark-muted hover:border-naver-green hover:text-white'
+                  : 'bg-dark-bg border border-dark-border text-dark-muted hover:border-naver-green hover:text-dark-text'
               }`}
             >
               <span onClick={() => handleSelectBlog(acc)}>{acc}</span>
@@ -620,7 +620,7 @@ function RankTracker({ userId }: RankTrackerProps) {
           onChange={(e) => setBlogIdInput(e.target.value)}
           onKeyDown={handleBlogInputKeyDown}
           placeholder="블로그 ID 또는 URL 입력 (예: myblog123 또는 blog.naver.com/myblog123)"
-          className="flex-1 px-4 py-3 bg-dark-bg border border-dark-border rounded-lg text-white placeholder-dark-muted focus:outline-none focus:border-naver-green"
+          className="flex-1 px-4 py-3 bg-dark-bg border border-dark-border rounded-lg text-dark-text placeholder-dark-muted focus:outline-none focus:border-naver-green"
         />
         <button
           onClick={handleAddBlog}
@@ -643,7 +643,7 @@ function RankTracker({ userId }: RankTrackerProps) {
                 className={`px-3 py-1.5 text-sm rounded transition ${
                   postCount === count
                     ? 'bg-naver-green text-white'
-                    : 'bg-dark-bg border border-dark-border text-dark-muted hover:border-naver-green hover:text-white'
+                    : 'bg-dark-bg border border-dark-border text-dark-muted hover:border-naver-green hover:text-dark-text'
                 }`}
               >
                 {count}개
@@ -744,7 +744,7 @@ function RankTracker({ userId }: RankTrackerProps) {
                             onChange={(e) => handleKeywordChange(post.log_no, e.target.value)}
                             onKeyDown={(e) => handleKeywordKeyDown(e, post.log_no)}
                             placeholder="키워드"
-                            className="flex-1 min-w-0 px-2 py-1 bg-dark-bg border border-dark-border rounded text-white text-xs placeholder-dark-muted focus:outline-none focus:border-naver-green"
+                            className="flex-1 min-w-0 px-2 py-1 bg-dark-bg border border-dark-border rounded text-dark-text text-xs placeholder-dark-muted focus:outline-none focus:border-naver-green"
                           />
                           {state?.keyword && (
                             <button

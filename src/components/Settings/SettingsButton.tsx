@@ -13,7 +13,7 @@ function SettingsButton({ onClick, isConfigured }: SettingsButtonProps) {
       title={isConfigured ? 'API 설정 (설정됨)' : 'API 설정'}
     >
       <svg
-        className="w-5 h-5 text-dark-muted hover:text-white transition"
+        className="w-5 h-5 text-dark-muted hover:text-dark-text transition"
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"

@@ -407,7 +407,7 @@ function KeywordSearch({ onOpenSettings, initialKeyword, onInitialKeywordConsume
           onChange={(e) => setKeyword(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="검색 키워드 입력..."
-          className="flex-1 px-4 py-3 bg-dark-bg border border-dark-border rounded-lg text-white placeholder-dark-muted focus:outline-none focus:border-naver-green"
+          className="flex-1 px-4 py-3 bg-dark-bg border border-dark-border rounded-lg text-dark-text placeholder-dark-muted focus:outline-none focus:border-naver-green"
         />
         <button
           onClick={handleSearch}
@@ -661,7 +661,7 @@ function KeywordSearch({ onOpenSettings, initialKeyword, onInitialKeywordConsume
                             return (
                               <td key={key} className="px-4 py-3 text-center">
                                 <span className={`font-mono font-medium ${
-                                  count === 0 ? 'text-dark-muted' : isAboveAvg ? 'text-naver-green' : 'text-white'
+                                  count === 0 ? 'text-dark-muted' : isAboveAvg ? 'text-naver-green' : 'text-dark-text'
                                 }`}>
                                   {count}
                                 </span>
@@ -705,7 +705,6 @@ function KeywordSearch({ onOpenSettings, initialKeyword, onInitialKeywordConsume
                 <thead>
                   <tr className="border-b border-dark-border">
                     <th className="px-4 py-2 text-left text-dark-muted w-20">순위</th>
-                    <th className="px-4 py-2 text-left text-dark-muted w-20">전체</th>
                     <th className="px-4 py-2 text-left text-dark-muted w-24">타입</th>
                     <th className="px-4 py-2 text-left text-dark-muted">제목</th>
                   </tr>
@@ -776,7 +775,7 @@ function KeywordSearch({ onOpenSettings, initialKeyword, onInitialKeywordConsume
                         <React.Fragment key={sectionKey}>
                           {/* 그룹 헤더 */}
                           <tr className="bg-dark-bg/50">
-                            <td colSpan={4} className="px-4 py-2">
+                            <td colSpan={3} className="px-4 py-2">
                               <div className="flex items-center gap-2">
                                 <span className={`px-2 py-0.5 rounded text-xs ${sectionBgColor} text-white font-medium whitespace-nowrap`}>
                                   {sectionKey.replace(/ \d+$/, '')}
@@ -791,12 +790,8 @@ function KeywordSearch({ onOpenSettings, initialKeyword, onInitialKeywordConsume
                           {items.map((item, idx) => {
                             const color = typeColors[item.type] || { bg: 'bg-gray-600', text: 'text-white' };
                             const label = typeLabels[item.type] || item.type;
-                            const sectionRank = item.section_rank != null ? item.section_rank : (idx + 1);
                             return (
                               <tr key={`${sectionKey}-${idx}`} className="border-b border-dark-border/30 hover:bg-dark-hover">
-                                <td className="px-4 py-3 font-bold text-naver-green">
-                                  {sectionRank}위
-                                </td>
                                 <td className="px-4 py-3 text-dark-muted text-xs">
                                   {item.rank}위
                                 </td>
@@ -882,7 +877,7 @@ function KeywordSearch({ onOpenSettings, initialKeyword, onInitialKeywordConsume
                 {relatedKeywords && !relatedLoading && relatedEnabled && (
                   <button
                     onClick={() => fetchRelatedKeywords(keyword.trim())}
-                    className="text-sm text-dark-muted hover:text-white transition"
+                    className="text-sm text-dark-muted hover:text-dark-text transition"
                   >
                     새로고침
                   </button>
@@ -944,7 +939,7 @@ function KeywordSearch({ onOpenSettings, initialKeyword, onInitialKeywordConsume
                                     setKeyword(item.keyword);
                                     setPendingSearch(item.keyword);
                                   }}
-                                  className={`${isTop ? 'text-yellow-400 font-medium' : 'text-white'} hover:text-naver-green hover:underline cursor-pointer bg-transparent border-none p-0 text-left`}
+                                  className={`${isTop ? 'text-yellow-400 font-medium' : 'text-dark-text'} hover:text-naver-green hover:underline cursor-pointer bg-transparent border-none p-0 text-left`}
                                 >
                                   {item.keyword}
                                 </button>

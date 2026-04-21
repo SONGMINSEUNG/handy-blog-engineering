@@ -231,7 +231,7 @@ function BidPriceSection({
           title="새로고침"
         >
           <svg
-            className={`w-5 h-5 text-dark-muted hover:text-white transition ${
+            className={`w-5 h-5 text-dark-muted hover:text-dark-text transition ${
               isRefreshing ? 'animate-spin' : ''
             }`}
             fill="none"
@@ -275,28 +275,28 @@ function BidPriceSection({
           <tbody>
             <tr className="border-b border-dark-border/50 hover:bg-dark-hover transition">
               <td className="px-4 py-3 text-dark-muted">월간 검색량</td>
-              <td className="px-4 py-3 text-right text-white font-medium">
+              <td className="px-4 py-3 text-right text-dark-text font-medium">
                 {formatNumber(data.pc_search_volume)}
               </td>
-              <td className="px-4 py-3 text-right text-white font-medium">
+              <td className="px-4 py-3 text-right text-dark-text font-medium">
                 {formatNumber(data.mobile_search_volume)}
               </td>
             </tr>
             <tr className="border-b border-dark-border/50 hover:bg-dark-hover transition">
               <td className="px-4 py-3 text-dark-muted">월간 클릭수</td>
-              <td className="px-4 py-3 text-right text-white font-medium">
+              <td className="px-4 py-3 text-right text-dark-text font-medium">
                 {formatNumber(data.pc_click_count)}
               </td>
-              <td className="px-4 py-3 text-right text-white font-medium">
+              <td className="px-4 py-3 text-right text-dark-text font-medium">
                 {formatNumber(data.mobile_click_count)}
               </td>
             </tr>
             <tr className="border-b border-dark-border/50 hover:bg-dark-hover transition">
               <td className="px-4 py-3 text-dark-muted">클릭률</td>
-              <td className="px-4 py-3 text-right text-white font-medium">
+              <td className="px-4 py-3 text-right text-dark-text font-medium">
                 {formatPercent(data.pc_click_rate)}
               </td>
-              <td className="px-4 py-3 text-right text-white font-medium">
+              <td className="px-4 py-3 text-right text-dark-text font-medium">
                 {formatPercent(data.mobile_click_rate)}
               </td>
             </tr>

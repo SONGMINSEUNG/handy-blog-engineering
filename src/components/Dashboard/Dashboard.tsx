@@ -112,7 +112,7 @@ export default function Dashboard({ result }: DashboardProps) {
                     <span className={`font-medium ${typeInfo.color}`}>
                       {typeInfo.label}
                     </span>
-                    <span className="text-white font-bold">{count}개</span>
+                    <span className="text-dark-text font-bold">{count}개</span>
                   </div>
                 );
               })}
@@ -156,7 +156,7 @@ export default function Dashboard({ result }: DashboardProps) {
                         href={item.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-white hover:text-naver-green transition truncate block"
+                        className="text-dark-text hover:text-naver-green transition truncate block"
                         title={item.title}
                       >
                         {item.title || '(제목 없음)'}

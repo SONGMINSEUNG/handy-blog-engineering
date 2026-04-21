@@ -11,6 +11,7 @@ import RankTracker from './pages/RankTracker';
 // @ts-ignore
 import SettingsButton from './components/Settings/SettingsButton';
 import ApiSettingsModal from './components/Settings/ApiSettingsModal';
+import Sidebar from './components/Sidebar/Sidebar';
 import {
   healthCheck,
   startAnalysis,
@@ -400,15 +401,7 @@ function App() {
     setActiveTab('keyword');
   }, []);
 
-  // 탭 목록
-  const tabs: Array<{ id: TabType; label: string; icon: string }> = [
-    { id: 'keyword', label: '키워드 조회', icon: 'M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z' },
-    { id: 'batch', label: '대량 조회', icon: 'M4 6h16M4 10h16M4 14h16M4 18h16' },
-    { id: 'rank', label: '순위 추적', icon: 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6' },
-    { id: 'blog', label: '블로그 진단', icon: 'M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z' },
-    { id: 'post', label: '포스팅 진단', icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
-    { id: 'morpheme', label: '형태소 진단', icon: 'M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129' },
-  ];
+  // 탭 목록 (Sidebar 컴포넌트에서 관리)
 
   // ===== 인증 로딩 중 =====
   if (authLoading) {
@@ -432,7 +425,7 @@ function App() {
             <div className="w-16 h-16 rounded-2xl naver-gradient flex items-center justify-center mx-auto mb-4">
               <span className="text-white font-bold text-2xl">H</span>
             </div>
-            <h1 className="text-2xl font-bold text-white">핸디 블로그 엔지니어링</h1>
+            <h1 className="text-2xl font-bold text-dark-text">핸디 블로그 엔지니어링</h1>
             <p className="text-dark-muted text-sm mt-2">로그인하여 모든 기능을 이용하세요</p>
           </div>
 
@@ -445,7 +438,7 @@ function App() {
                 className={`flex-1 px-4 py-2.5 text-sm font-medium rounded-lg transition ${
                   authTab === 'login'
                     ? 'bg-naver-green text-white'
-                    : 'bg-dark-bg border border-dark-border text-dark-muted hover:text-white'
+                    : 'bg-dark-bg border border-dark-border text-dark-muted hover:text-dark-text'
                 }`}
               >
                 로그인
@@ -455,7 +448,7 @@ function App() {
                 className={`flex-1 px-4 py-2.5 text-sm font-medium rounded-lg transition ${
                   authTab === 'signup'
                     ? 'bg-naver-green text-white'
-                    : 'bg-dark-bg border border-dark-border text-dark-muted hover:text-white'
+                    : 'bg-dark-bg border border-dark-border text-dark-muted hover:text-dark-text'
                 }`}
               >
                 회원가입
@@ -471,7 +464,7 @@ function App() {
                   onChange={(e) => setAuthUsername(e.target.value)}
                   onKeyDown={handleAuthKeyDown}
                   placeholder="아이디"
-                  className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-lg text-white placeholder-dark-muted focus:outline-none focus:border-naver-green"
+                  className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-lg text-dark-text placeholder-dark-muted focus:outline-none focus:border-naver-green"
                 />
                 <input
                   type="password"
@@ -479,7 +472,7 @@ function App() {
                   onChange={(e) => setAuthPassword(e.target.value)}
                   onKeyDown={handleAuthKeyDown}
                   placeholder="비밀번호"
-                  className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-lg text-white placeholder-dark-muted focus:outline-none focus:border-naver-green"
+                  className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-lg text-dark-text placeholder-dark-muted focus:outline-none focus:border-naver-green"
                 />
                 <button
                   onClick={handleAuthLogin}
@@ -500,7 +493,7 @@ function App() {
                   onChange={(e) => setAuthUsername(e.target.value)}
                   onKeyDown={handleAuthKeyDown}
                   placeholder="아이디 (2자 이상)"
-                  className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-lg text-white placeholder-dark-muted focus:outline-none focus:border-naver-green"
+                  className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-lg text-dark-text placeholder-dark-muted focus:outline-none focus:border-naver-green"
                 />
                 <input
                   type="password"
@@ -508,7 +501,7 @@ function App() {
                   onChange={(e) => setAuthPassword(e.target.value)}
                   onKeyDown={handleAuthKeyDown}
                   placeholder="비밀번호 (4자 이상)"
-                  className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-lg text-white placeholder-dark-muted focus:outline-none focus:border-naver-green"
+                  className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-lg text-dark-text placeholder-dark-muted focus:outline-none focus:border-naver-green"
                 />
                 <input
                   type="password"
@@ -516,7 +509,7 @@ function App() {
                   onChange={(e) => setAuthPasswordConfirm(e.target.value)}
                   onKeyDown={handleAuthKeyDown}
                   placeholder="비밀번호 확인"
-                  className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-lg text-white placeholder-dark-muted focus:outline-none focus:border-naver-green"
+                  className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-lg text-dark-text placeholder-dark-muted focus:outline-none focus:border-naver-green"
                 />
                 <button
                   onClick={handleAuthSignup}
@@ -540,58 +533,18 @@ function App() {
 
   // ===== 로그인 된 상태: 기존 앱 =====
   return (
-    <div className="h-screen flex flex-col bg-dark-bg">
-      {/* Header */}
-      <header
-        className="h-14 flex items-center justify-between pl-20 pr-6 border-b border-dark-border bg-dark-card/50 backdrop-blur"
-        style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}
-      >
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg naver-gradient flex items-center justify-center">
-            <span className="text-white font-bold text-sm">H</span>
-          </div>
-          <h1 className="text-lg font-semibold">핸디 블로그 엔지니어링</h1>
-        </div>
-        <div className="flex items-center gap-4" style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}>
-          {/* 유저 정보 + 로그아웃 */}
-          <div className="flex items-center gap-2 ml-2 pl-2 border-l border-dark-border">
-            <span className="text-sm text-white">
-              <span className="text-naver-green font-semibold">{authUser.username || authUser.nickname}</span>님
-            </span>
-            <button
-              onClick={handleAuthLogout}
-              className="px-2.5 py-1 text-xs bg-dark-border text-dark-muted rounded hover:bg-dark-hover hover:text-white transition"
-            >
-              로그아웃
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* Navigation Tabs */}
-      {appStatus !== 'connecting' && appStatus !== 'error' && (
-        <nav className="flex border-b border-dark-border bg-dark-card/30">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-6 py-3 text-sm font-medium transition border-b-2 ${
-                activeTab === tab.id
-                  ? 'border-naver-green text-naver-green'
-                  : 'border-transparent text-dark-muted hover:text-white hover:bg-dark-hover'
-              }`}
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={tab.icon} />
-              </svg>
-              {tab.label}
-            </button>
-          ))}
-        </nav>
-      )}
+    <div className="h-screen flex bg-dark-bg">
+      {/* Sidebar */}
+      <Sidebar
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        username={authUser.username || authUser.nickname || ''}
+        onLogout={handleAuthLogout}
+        onOpenSettings={handleOpenSettings}
+      />
 
       {/* Main Content */}
-      <main className="flex-1 flex overflow-hidden">
+      <main className="flex-1 flex flex-col overflow-hidden">
         {/* Loading/Connecting State */}
         {appStatus === 'connecting' && (
           <div className="flex-1 flex items-center justify-center">
@@ -657,7 +610,7 @@ function App() {
                 {/* Ready State - Keyword Input */}
                 {(appStatus === 'ready' || appStatus === 'waiting_login') && (
                   <div className="flex-1 flex items-center justify-center p-8">
-                    <div className="w-full max-w-2xl">
+                    <div className="w-full max-w-5xl mx-auto">
                       <div className="text-center mb-8">
                         <h2 className="text-2xl font-bold mb-2">대량 키워드 조회</h2>
                         <p className="text-dark-muted">여러 키워드를 동시에 조회합니다.</p>
@@ -701,7 +654,7 @@ function App() {
                       <div className="w-16 h-16 border-4 border-naver-green border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
 
                       {/* 랜덤 멘트 */}
-                      <p className="text-lg text-white font-medium mb-3 transition-opacity duration-500">
+                      <p className="text-lg text-dark-text font-medium mb-3 transition-opacity duration-500">
                         {loadingMessage}
                       </p>
 
@@ -809,7 +762,7 @@ function App() {
                               {batchRelatedKeywords && !batchRelatedLoading && batchRelatedEnabled && (
                                 <button
                                   onClick={() => fetchBatchRelatedKeywords(results.map(r => r.keyword))}
-                                  className="text-sm text-dark-muted hover:text-white transition"
+                                  className="text-sm text-dark-muted hover:text-dark-text transition"
                                 >
                                   새로고침
                                 </button>
@@ -859,7 +812,7 @@ function App() {
                                             >
                                               <td className="px-4 py-2.5 text-dark-muted">{idx + 1}</td>
                                               <td className="px-4 py-2.5">
-                                                <span className={`${isAnalyzed ? 'text-naver-green font-bold' : isTop ? 'text-yellow-400 font-medium' : 'text-white'}`}>
+                                                <span className={`${isAnalyzed ? 'text-naver-green font-bold' : isTop ? 'text-yellow-400 font-medium' : 'text-dark-text'}`}>
                                                   {item.keyword}
                                                 </span>
                                                 {isAnalyzed && (
@@ -908,7 +861,7 @@ function App() {
                           </h3>
                           <button
                             onClick={() => setSelectedKeyword('')}
-                            className="text-dark-muted hover:text-white transition"
+                            className="text-dark-muted hover:text-dark-text transition"
                           >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

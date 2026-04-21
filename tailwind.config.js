@@ -9,12 +9,12 @@ export default {
     extend: {
       colors: {
         dark: {
-          bg: '#0f0f0f',
-          card: '#1a1a1a',
-          border: '#2a2a2a',
-          hover: '#252525',
-          text: '#e5e5e5',
-          muted: '#888888',
+          bg: 'var(--color-bg)',
+          card: 'var(--color-card)',
+          border: 'var(--color-border)',
+          hover: 'var(--color-hover)',
+          text: 'var(--color-text)',
+          muted: 'var(--color-muted)',
         },
         naver: {
           green: '#03c75a',

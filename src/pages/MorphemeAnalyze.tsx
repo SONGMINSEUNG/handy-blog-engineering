@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
-import { analyzeMorpheme, fetchBlogContent, MorphemeResult, FoundKeyword } from '../services/api';
+import { analyzeMorpheme, MorphemeResult, FoundKeyword, analyzeTopContents, TopContentItem, TopContentAnalysisResult } from '../services/api';
 import { ImagePreviewGrid } from '../components/ImagePreviewGrid';
 
 // OG 링크 미리보기 블록 제거 (도메인 라인 + 인접 제목/설명)
@@ -49,33 +49,9 @@ export default function MorphemeAnalyze() {
   const [pastedImages, setPastedImages] = useState<string[]>([]);
   const [error, setError] = useState('');
 
-  // URL 가져오기 상태
-  const [blogUrl, setBlogUrl] = useState('');
-  const [fetchLoading, setFetchLoading] = useState(false);
-  const [fetchedImageCount, setFetchedImageCount] = useState<number | null>(null);
-
-  // URL로 블로그 콘텐츠 가져오기
-  const handleFetchContent = useCallback(async () => {
-    if (!blogUrl.trim()) {
-      setError('블로그 URL을 입력해주세요.');
-      return;
-    }
-    setFetchLoading(true);
-    setError('');
-    try {
-      const data = await fetchBlogContent(blogUrl.trim());
-      setText(data.text);
-      setFetchedImageCount(data.image_count);
-      // 가져온 이미지 수를 pastedImages 대신 별도 표시
-      setPastedImages([]);
-    } catch (err: any) {
-      const detail = err.response?.data?.detail;
-      const msg = typeof detail === 'object' ? detail.message : detail;
-      setError(msg || '블로그 콘텐츠를 가져오는 중 오류가 발생했습니다.');
-    } finally {
-      setFetchLoading(false);
-    }
-  }, [blogUrl]);
+  // 상위노출 블로그 분석 상태
+  const [topContentResult, setTopContentResult] = useState<TopContentAnalysisResult | null>(null);
+  const [topContentLoading, setTopContentLoading] = useState(false);
 
   // OG 링크 요소 제거 함수 (네이버 블로그 삽입 링크 미리보기)
   const removeOgLinkElements = useCallback((doc: Document) => {
@@ -171,10 +147,26 @@ export default function MorphemeAnalyze() {
     setLoading(true);
     setError('');
     setResult(null);
+    setTopContentResult(null);
 
     try {
-      const response = await analyzeMorpheme(text.trim(), targetKeyword.trim() || undefined);
+      const keyword = targetKeyword.trim() || undefined;
+      const response = await analyzeMorpheme(text.trim(), keyword);
       setResult(response);
+
+      // 타겟 키워드가 있으면 상위노출 블로그 분석도 실행
+      if (keyword) {
+        setTopContentLoading(true);
+        try {
+          const topResult = await analyzeTopContents(keyword, 0, 0, 5);
+          setTopContentResult(topResult);
+        } catch (topErr: any) {
+          console.warn('상위노출 분석 실패:', topErr);
+          // 상위노출 분석 실패는 메인 결과에 영향주지 않음
+        } finally {
+          setTopContentLoading(false);
+        }
+      }
     } catch (err: any) {
       setError(err.response?.data?.detail || '분석 중 오류가 발생했습니다.');
     } finally {
@@ -229,35 +221,6 @@ export default function MorphemeAnalyze() {
     <div className="p-6 max-w-6xl mx-auto">
       <h1 className="text-2xl font-bold mb-6">형태소 진단</h1>
 
-      {/* 블로그 URL 가져오기 */}
-      <div className="glass-card p-4 mb-4">
-        <label className="block text-sm font-medium text-dark-muted mb-2">
-          블로그 URL로 가져오기 (선택)
-        </label>
-        <div className="flex gap-3">
-          <input
-            type="text"
-            value={blogUrl}
-            onChange={(e) => setBlogUrl(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter') handleFetchContent(); }}
-            placeholder="https://blog.naver.com/blogid/123456789"
-            className="flex-1 px-4 py-2.5 bg-dark-bg border border-dark-border rounded-lg text-white placeholder-dark-muted focus:outline-none focus:border-naver-green text-sm"
-          />
-          <button
-            onClick={handleFetchContent}
-            disabled={fetchLoading}
-            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-lg disabled:opacity-50 transition text-sm whitespace-nowrap"
-          >
-            {fetchLoading ? '가져오는 중...' : '가져오기'}
-          </button>
-        </div>
-        {fetchedImageCount !== null && (
-          <div className="mt-2 text-xs text-dark-muted">
-            블로그에서 가져온 이미지: <span className="text-naver-green font-medium">{fetchedImageCount}개</span>
-          </div>
-        )}
-      </div>
-
       {/* 텍스트 입력 */}
       <div className="glass-card p-6 mb-6">
         <div className="mb-4">
@@ -275,13 +238,12 @@ export default function MorphemeAnalyze() {
                   if (url.startsWith('blob:')) URL.revokeObjectURL(url);
                 });
                 setPastedImages([]);
-                setFetchedImageCount(null);
               }
             }}
             onPaste={handlePaste}
             placeholder="블로그 글을 복사+붙여넣기 하세요. (Tip: 블로그에서 스크롤을 맨 아래까지 내린 후 복사해야 이미지가 모두 포함됩니다)"
             rows={8}
-            className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-lg text-white placeholder-dark-muted focus:outline-none focus:border-naver-green resize-none"
+            className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-lg text-dark-text placeholder-dark-muted focus:outline-none focus:border-naver-green resize-none"
           />
           <div className="flex items-center justify-end mt-1">
             {text.length > 0 && (() => {
@@ -401,7 +363,7 @@ export default function MorphemeAnalyze() {
               value={targetKeyword}
               onChange={(e) => setTargetKeyword(e.target.value)}
               placeholder="분석 대상 키워드..."
-              className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-lg text-white placeholder-dark-muted focus:outline-none focus:border-naver-green"
+              className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-lg text-dark-text placeholder-dark-muted focus:outline-none focus:border-naver-green"
             />
           </div>
           <button
@@ -428,6 +390,122 @@ export default function MorphemeAnalyze() {
 
       {result && !loading && (
         <div className="space-y-6">
+          {/* 상위노출 블로그 분석 */}
+          {targetKeyword.trim() && (
+            <div className="glass-card p-6">
+              <h2 className="text-lg font-semibold mb-4">
+                상위노출 블로그 분석: "{targetKeyword}"
+              </h2>
+
+              {topContentLoading && (
+                <div className="flex items-center justify-center py-8">
+                  <div className="w-8 h-8 border-3 border-naver-green border-t-transparent rounded-full animate-spin"></div>
+                  <span className="ml-3 text-dark-muted text-sm">상위노출 블로그 분석 중...</span>
+                </div>
+              )}
+
+              {topContentResult && !topContentLoading && (
+                <>
+                  {/* 상위 평균 요약 */}
+                  <div className="grid grid-cols-3 gap-4 mb-4">
+                    <div className="p-3 bg-dark-bg rounded-lg text-center">
+                      <div className="text-lg font-bold text-cyan-400">{topContentResult.averages.keyword_count}</div>
+                      <div className="text-xs text-dark-muted">평균 키워드 수</div>
+                    </div>
+                    <div className="p-3 bg-dark-bg rounded-lg text-center">
+                      <div className="text-lg font-bold text-blue-400">{topContentResult.averages.image_count}</div>
+                      <div className="text-xs text-dark-muted">평균 사진 수</div>
+                    </div>
+                    <div className="p-3 bg-dark-bg rounded-lg text-center">
+                      <div className="text-lg font-bold text-naver-green">{topContentResult.averages.content_length.toLocaleString()}</div>
+                      <div className="text-xs text-dark-muted">평균 글자 수</div>
+                    </div>
+                  </div>
+
+                  {/* 상위 콘텐츠 테이블 */}
+                  {topContentResult.top_contents.length > 0 && (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b border-dark-border">
+                            <th className="px-3 py-2 text-left text-dark-muted">순위</th>
+                            <th className="px-3 py-2 text-left text-dark-muted">제목</th>
+                            <th className="px-3 py-2 text-right text-dark-muted">키워드 횟수</th>
+                            <th className="px-3 py-2 text-right text-dark-muted">사진 수</th>
+                            <th className="px-3 py-2 text-right text-dark-muted">글자 수</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {topContentResult.top_contents.map((item: TopContentItem) => (
+                            <tr key={item.rank} className="border-b border-dark-border/50 hover:bg-dark-hover">
+                              <td className="px-3 py-2">
+                                <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
+                                  item.rank <= 3 ? 'bg-naver-green/20 text-naver-green' : 'bg-dark-bg text-dark-muted'
+                                }`}>
+                                  {item.rank}
+                                </span>
+                              </td>
+                              <td className="px-3 py-2">
+                                <a
+                                  href={item.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-400 hover:underline line-clamp-1"
+                                  title={item.title}
+                                >
+                                  {item.title || '(제목 없음)'}
+                                </a>
+                              </td>
+                              <td className="px-3 py-2 text-right">
+                                <span className="text-cyan-400 font-medium">{item.keyword_count}</span>
+                                <span className="text-dark-muted text-xs ml-1">회</span>
+                              </td>
+                              <td className="px-3 py-2 text-right">
+                                <span className="text-blue-400 font-medium">{item.image_count}</span>
+                                <span className="text-dark-muted text-xs ml-1">장</span>
+                              </td>
+                              <td className="px-3 py-2 text-right">
+                                <span className="text-dark-muted">{item.content_length.toLocaleString()}</span>
+                              </td>
+                            </tr>
+                          ))}
+                          {/* 평균 행 */}
+                          <tr className="border-t-2 border-naver-green/30 bg-naver-green/5">
+                            <td className="px-3 py-2"></td>
+                            <td className="px-3 py-2 font-medium text-naver-green">상위 평균</td>
+                            <td className="px-3 py-2 text-right">
+                              <span className="text-naver-green font-bold">{topContentResult.averages.keyword_count}</span>
+                              <span className="text-dark-muted text-xs ml-1">회</span>
+                            </td>
+                            <td className="px-3 py-2 text-right">
+                              <span className="text-naver-green font-bold">{topContentResult.averages.image_count}</span>
+                              <span className="text-dark-muted text-xs ml-1">장</span>
+                            </td>
+                            <td className="px-3 py-2 text-right">
+                              <span className="text-naver-green font-bold">{topContentResult.averages.content_length.toLocaleString()}</span>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+
+                  {topContentResult.top_contents.length === 0 && (
+                    <div className="text-center text-dark-muted py-4 text-sm">
+                      상위노출 블로그 콘텐츠를 찾지 못했습니다.
+                    </div>
+                  )}
+                </>
+              )}
+
+              {!topContentResult && !topContentLoading && (
+                <div className="text-center text-dark-muted py-4 text-sm">
+                  분석 버튼을 눌러 상위노출 블로그 정보를 확인하세요.
+                </div>
+              )}
+            </div>
+          )}
+
           {/* 요약 */}
           <div className="glass-card p-6">
             <h2 className="text-lg font-semibold mb-4">형태소 분석 요약</h2>
@@ -741,6 +819,7 @@ export default function MorphemeAnalyze() {
               </div>
             </div>
           )}
+
 
         </div>
       )}
