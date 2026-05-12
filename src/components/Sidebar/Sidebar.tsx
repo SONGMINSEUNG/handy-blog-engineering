@@ -8,7 +8,7 @@ interface SidebarProps {
   onTabChange: (tab: TabType) => void;
   username: string;
   onLogout: () => void;
-  onOpenSettings: () => void;
+  onOpenSettings?: () => void;
 }
 
 const menuItems: Array<{ id: TabType; label: string; icon: string }> = [
@@ -44,20 +44,20 @@ const menuItems: Array<{ id: TabType; label: string; icon: string }> = [
   },
 ];
 
-function Sidebar({ activeTab, onTabChange, username, onLogout, onOpenSettings }: SidebarProps) {
+function Sidebar({ activeTab, onTabChange, username, onLogout }: SidebarProps) {
   const { isDark, toggleTheme } = useTheme();
 
   return (
-    <aside className="sidebar-container w-[230px] min-w-[230px] h-full flex flex-col border-r border-dark-border" style={{ backgroundColor: 'var(--color-sidebar)' }}>
+    <aside className="sidebar-container w-[230px] min-w-[230px] h-full flex flex-col border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-[#111111]">
       {/* Logo / App Name */}
-      <div className="px-5 py-5 border-b border-dark-border">
+      <div className="px-5 py-5 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl naver-gradient flex items-center justify-center flex-shrink-0">
             <span className="text-white font-bold text-base">H</span>
           </div>
           <div className="min-w-0">
-            <h1 className="text-sm font-bold text-dark-text leading-tight truncate">핸디 블로그</h1>
-            <p className="text-[11px] text-dark-muted leading-tight">엔지니어링</p>
+            <h1 className="text-sm font-bold text-gray-900 dark:text-gray-100 leading-tight truncate">핸디 블로그</h1>
+            <p className="text-[11px] text-gray-900 dark:text-gray-400 leading-tight">엔지니어링</p>
           </div>
         </div>
       </div>
@@ -75,7 +75,7 @@ function Sidebar({ activeTab, onTabChange, username, onLogout, onOpenSettings }:
                   w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150
                   ${isActive
                     ? 'bg-naver-green/15 text-naver-green'
-                    : 'text-dark-muted hover:text-dark-text hover:bg-dark-hover'
+                    : 'text-gray-900 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-[#252525]'
                   }
                 `}
               >
@@ -99,11 +99,11 @@ function Sidebar({ activeTab, onTabChange, username, onLogout, onOpenSettings }:
       </nav>
 
       {/* Bottom Section: Theme Toggle + Settings + User */}
-      <div className="border-t border-dark-border p-3 space-y-2">
+      <div className="border-t border-gray-200 dark:border-gray-700 p-3 space-y-2">
         {/* Theme Toggle Button */}
         <button
           onClick={toggleTheme}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-dark-muted hover:text-dark-text hover:bg-dark-hover transition-all duration-150"
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-900 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-[#252525] transition-all duration-150"
           title={isDark ? '라이트 모드로 전환' : '다크 모드로 전환'}
         >
           {isDark ? (
@@ -120,18 +120,6 @@ function Sidebar({ activeTab, onTabChange, username, onLogout, onOpenSettings }:
           <span>{isDark ? '라이트 모드' : '다크 모드'}</span>
         </button>
 
-        {/* Settings Button */}
-        <button
-          onClick={onOpenSettings}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-dark-muted hover:text-dark-text hover:bg-dark-hover transition-all duration-150"
-        >
-          <svg className="w-[18px] h-[18px] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
-          <span>API 설정</span>
-        </button>
-
         {/* User Info */}
         <div className="flex items-center gap-2 px-3 py-2">
           <div className="w-7 h-7 rounded-full bg-naver-green/20 flex items-center justify-center flex-shrink-0">
@@ -140,11 +128,11 @@ function Sidebar({ activeTab, onTabChange, username, onLogout, onOpenSettings }:
             </span>
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-medium text-dark-text truncate">{username}</p>
+            <p className="text-xs font-medium text-gray-900 dark:text-gray-100 truncate">{username}</p>
           </div>
           <button
             onClick={onLogout}
-            className="text-dark-muted hover:text-red-400 transition flex-shrink-0"
+            className="text-gray-900 dark:text-gray-400 hover:text-red-400 transition flex-shrink-0"
             title="로그아웃"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>

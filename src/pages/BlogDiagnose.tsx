@@ -78,7 +78,7 @@ function aggregateVisitorData(
 function VisitorBarChart({ data }: { data: ChartDataItem[] }) {
   if (data.length === 0) {
     return (
-      <div className="text-center text-dark-muted py-8">
+      <div className="text-center text-gray-900 dark:text-gray-400 py-8">
         방문자 데이터가 없습니다.
       </div>
     );
@@ -98,7 +98,7 @@ function VisitorBarChart({ data }: { data: ChartDataItem[] }) {
           <div key={i} className={`flex-1 flex flex-col items-center ${barMinWidth} group relative`}>
             {/* 툴팁 */}
             <div className="absolute bottom-full mb-1 hidden group-hover:block z-10">
-              <div className="bg-dark-bg border border-dark-border rounded px-2 py-1 text-xs text-dark-text whitespace-nowrap shadow-lg">
+              <div className="bg-gray-50 dark:bg-[#0f0f0f] border border-gray-200 dark:border-gray-700 rounded px-2 py-1 text-xs text-gray-900 dark:text-gray-100 whitespace-nowrap shadow-lg">
                 {d.label}: {d.count.toLocaleString()}
               </div>
             </div>
@@ -115,7 +115,7 @@ function VisitorBarChart({ data }: { data: ChartDataItem[] }) {
             />
             {/* 라벨 - 데이터가 적을 때만 표시 */}
             {data.length <= 15 && (
-              <span className="text-[10px] text-dark-muted mt-1 truncate w-full text-center">
+              <span className="text-[10px] text-gray-900 dark:text-gray-400 mt-1 truncate w-full text-center">
                 {d.label}
               </span>
             )}
@@ -165,7 +165,7 @@ function VisitorChart({ dailyVisitors }: { dailyVisitors: Record<string, number>
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${
                 tab === t
                   ? 'bg-naver-green text-white'
-                  : 'bg-dark-bg border border-dark-border text-dark-muted hover:border-naver-green hover:text-dark-text'
+                  : 'bg-gray-50 dark:bg-[#0f0f0f] border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-400 hover:border-naver-green hover:text-gray-900 dark:hover:text-gray-100'
               }`}
             >
               {tabLabels[t]}
@@ -177,18 +177,18 @@ function VisitorChart({ dailyVisitors }: { dailyVisitors: Record<string, number>
       {/* 요약 정보 */}
       <div className="flex gap-4 mb-4 text-sm">
         <div>
-          <span className="text-dark-muted">기간 합계: </span>
-          <span className="text-dark-text font-medium">{totalInPeriod.toLocaleString()}</span>
+          <span className="text-gray-900 dark:text-gray-400">기간 합계: </span>
+          <span className="text-gray-900 dark:text-gray-100 font-medium">{totalInPeriod.toLocaleString()}</span>
         </div>
         <div>
-          <span className="text-dark-muted">
+          <span className="text-gray-900 dark:text-gray-400">
             {tab === 'daily' ? '일 평균' : tab === 'weekly' ? '주 평균' : '월 평균'}:{' '}
           </span>
-          <span className="text-dark-text font-medium">{avgInPeriod.toLocaleString()}</span>
+          <span className="text-gray-900 dark:text-gray-100 font-medium">{avgInPeriod.toLocaleString()}</span>
         </div>
         <div>
-          <span className="text-dark-muted">데이터: </span>
-          <span className="text-dark-text font-medium">{dataCount}일</span>
+          <span className="text-gray-900 dark:text-gray-400">데이터: </span>
+          <span className="text-gray-900 dark:text-gray-100 font-medium">{dataCount}일</span>
         </div>
       </div>
 
@@ -197,7 +197,7 @@ function VisitorChart({ dailyVisitors }: { dailyVisitors: Record<string, number>
 
       {/* 라벨 범위 표시 (데이터가 많을 때) */}
       {chartData.length > 15 && (
-        <div className="flex justify-between mt-1 text-[10px] text-dark-muted px-1">
+        <div className="flex justify-between mt-1 text-[10px] text-gray-900 dark:text-gray-400 px-1">
           <span>{chartData[0]?.label}</span>
           <span>{chartData[chartData.length - 1]?.label}</span>
         </div>
@@ -205,7 +205,7 @@ function VisitorChart({ dailyVisitors }: { dailyVisitors: Record<string, number>
 
       {/* 데이터 제한 안내 */}
       {dataCount < 7 && (
-        <div className="mt-3 text-xs text-dark-muted text-center">
+        <div className="mt-3 text-xs text-gray-900 dark:text-gray-400 text-center">
           * 네이버 API 특성상 최근 수일 데이터만 제공됩니다.
         </div>
       )}
@@ -231,7 +231,7 @@ function VisitorHistoryChart({ history }: { history: VisitorHistoryItem[] }) {
     <div className="glass-card p-6">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold">방문자 추이 (누적 기록)</h2>
-        <span className="text-xs text-dark-muted">{history.length}일 기록</span>
+        <span className="text-xs text-gray-900 dark:text-gray-400">{history.length}일 기록</span>
       </div>
 
       {history.length === 1 && (
@@ -243,25 +243,25 @@ function VisitorHistoryChart({ history }: { history: VisitorHistoryItem[] }) {
       {/* 요약 정보 */}
       <div className="flex gap-4 mb-4 text-sm">
         <div>
-          <span className="text-dark-muted">기간 합계: </span>
-          <span className="text-dark-text font-medium">
+          <span className="text-gray-900 dark:text-gray-400">기간 합계: </span>
+          <span className="text-gray-900 dark:text-gray-100 font-medium">
             {history.reduce((sum, d) => sum + d.visitor_count, 0).toLocaleString()}
           </span>
         </div>
         <div>
-          <span className="text-dark-muted">일 평균: </span>
-          <span className="text-dark-text font-medium">
+          <span className="text-gray-900 dark:text-gray-400">일 평균: </span>
+          <span className="text-gray-900 dark:text-gray-100 font-medium">
             {Math.round(history.reduce((sum, d) => sum + d.visitor_count, 0) / history.length).toLocaleString()}
           </span>
         </div>
         {history.length >= 2 && (
           <div>
-            <span className="text-dark-muted">최근 변화: </span>
+            <span className="text-gray-900 dark:text-gray-400">최근 변화: </span>
             {(() => {
               const latest = history[history.length - 1].visitor_count;
               const prev = history[history.length - 2].visitor_count;
               const diff = latest - prev;
-              const color = diff > 0 ? 'text-green-400' : diff < 0 ? 'text-red-400' : 'text-dark-muted';
+              const color = diff > 0 ? 'text-green-400' : diff < 0 ? 'text-red-400' : 'text-gray-900 dark:text-gray-400';
               const prefix = diff > 0 ? '+' : '';
               return <span className={`font-medium ${color}`}>{prefix}{diff.toLocaleString()}</span>;
             })()}
@@ -279,10 +279,10 @@ function VisitorHistoryChart({ history }: { history: VisitorHistoryItem[] }) {
             <div key={i} className={`flex-1 flex flex-col items-center ${barMinWidth} group relative`}>
               {/* 툴팁 */}
               <div className="absolute bottom-full mb-1 hidden group-hover:block z-10">
-                <div className="bg-dark-bg border border-dark-border rounded px-2 py-1 text-xs text-dark-text whitespace-nowrap shadow-lg">
+                <div className="bg-gray-50 dark:bg-[#0f0f0f] border border-gray-200 dark:border-gray-700 rounded px-2 py-1 text-xs text-gray-900 dark:text-gray-100 whitespace-nowrap shadow-lg">
                   <div>{formatDate(d.date)}: {d.visitor_count.toLocaleString()}명</div>
-                  <div className="text-dark-muted">전체: {d.total_visitor.toLocaleString()}</div>
-                  <div className="text-dark-muted">이웃: {d.subscriber_count.toLocaleString()}</div>
+                  <div className="text-gray-900 dark:text-gray-400">전체: {d.total_visitor.toLocaleString()}</div>
+                  <div className="text-gray-900 dark:text-gray-400">이웃: {d.subscriber_count.toLocaleString()}</div>
                 </div>
               </div>
               {/* 값 표시 - 데이터가 적을 때 */}
@@ -298,7 +298,7 @@ function VisitorHistoryChart({ history }: { history: VisitorHistoryItem[] }) {
               />
               {/* 라벨 */}
               {history.length <= 15 && (
-                <span className="text-[10px] text-dark-muted mt-1 truncate w-full text-center">
+                <span className="text-[10px] text-gray-900 dark:text-gray-400 mt-1 truncate w-full text-center">
                   {formatDate(d.date)}
                 </span>
               )}
@@ -309,7 +309,7 @@ function VisitorHistoryChart({ history }: { history: VisitorHistoryItem[] }) {
 
       {/* 라벨 범위 표시 (데이터가 많을 때) */}
       {history.length > 15 && (
-        <div className="flex justify-between mt-1 text-[10px] text-dark-muted px-1">
+        <div className="flex justify-between mt-1 text-[10px] text-gray-900 dark:text-gray-400 px-1">
           <span>{formatDate(history[0].date)}</span>
           <span>{formatDate(history[history.length - 1].date)}</span>
         </div>
@@ -381,7 +381,7 @@ export default function BlogDiagnose({ onNavigateToPostDiagnose }: BlogDiagnoseP
           onChange={(e) => setBlogId(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="블로그 ID 또는 URL 입력... (예: blogid123 또는 https://blog.naver.com/blogid123)"
-          className="flex-1 px-4 py-3 bg-dark-bg border border-dark-border rounded-lg text-dark-text placeholder-dark-muted focus:outline-none focus:border-naver-green"
+          className="flex-1 px-4 py-3 bg-gray-50 dark:bg-[#0f0f0f] border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-naver-green"
         />
         <button
           onClick={handleDiagnose}
@@ -394,7 +394,7 @@ export default function BlogDiagnose({ onNavigateToPostDiagnose }: BlogDiagnoseP
 
       {/* 글 개수 선택 */}
       <div className="flex items-center gap-3 mb-6">
-        <span className="text-sm text-dark-muted">분석 글 수:</span>
+        <span className="text-sm text-gray-900 dark:text-gray-400">분석 글 수:</span>
         <div className="flex gap-2">
           {[30, 60, 90].map((count) => (
             <button
@@ -404,7 +404,7 @@ export default function BlogDiagnose({ onNavigateToPostDiagnose }: BlogDiagnoseP
               className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
                 postCount === count
                   ? 'bg-naver-green text-white'
-                  : 'bg-dark-bg border border-dark-border text-dark-muted hover:border-naver-green hover:text-dark-text'
+                  : 'bg-gray-50 dark:bg-[#0f0f0f] border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-400 hover:border-naver-green hover:text-gray-900 dark:hover:text-gray-100'
               } disabled:opacity-50`}
             >
               {count}개
@@ -420,7 +420,7 @@ export default function BlogDiagnose({ onNavigateToPostDiagnose }: BlogDiagnoseP
       )}
 
       {loading && (
-        <div className="flex items-center justify-center py-12">
+        <div className="flex items-center justify-center" style={{minHeight: 'calc(100vh - 300px)'}}>
           <div className="w-12 h-12 border-4 border-naver-green border-t-transparent rounded-full animate-spin"></div>
         </div>
       )}
@@ -441,15 +441,15 @@ export default function BlogDiagnose({ onNavigateToPostDiagnose }: BlogDiagnoseP
               <div className="flex-1">
                 <div className="grid grid-cols-3 gap-4 mb-4">
                   <div>
-                    <div className="text-dark-muted text-sm">블로그 ID</div>
+                    <div className="text-gray-900 dark:text-gray-400 text-sm">블로그 ID</div>
                     <div className="font-medium">{result.blog_info.blog_id}</div>
                   </div>
                   <div>
-                    <div className="text-dark-muted text-sm">블로그 이름</div>
+                    <div className="text-gray-900 dark:text-gray-400 text-sm">블로그 이름</div>
                     <div className="font-medium">{result.blog_info.blog_name || '-'}</div>
                   </div>
                   <div>
-                    <div className="text-dark-muted text-sm">블로그 제목</div>
+                    <div className="text-gray-900 dark:text-gray-400 text-sm">블로그 제목</div>
                     <div className="font-medium">{result.blog_info.blog_title || '-'}</div>
                   </div>
                 </div>
@@ -460,32 +460,32 @@ export default function BlogDiagnose({ onNavigateToPostDiagnose }: BlogDiagnoseP
           {/* 통계 카드 - 이웃수, 방문자, 월 발행수 */}
           <div className="grid grid-cols-4 gap-4">
             <div className="glass-card p-5 text-center">
-              <div className="text-dark-muted text-sm mb-2">이웃 수</div>
+              <div className="text-gray-900 dark:text-gray-400 text-sm mb-2">이웃 수</div>
               <div className="text-3xl font-bold text-naver-green">
                 {result.blog_info.neighbor_count?.toLocaleString() || 0}
               </div>
-              <div className="text-dark-muted text-xs mt-1">명</div>
+              <div className="text-gray-900 dark:text-gray-400 text-xs mt-1">명</div>
             </div>
             <div className="glass-card p-5 text-center">
-              <div className="text-dark-muted text-sm mb-2">오늘 방문자</div>
+              <div className="text-gray-900 dark:text-gray-400 text-sm mb-2">오늘 방문자</div>
               <div className="text-3xl font-bold text-blue-400">
                 {result.blog_info.today_visitors?.toLocaleString() || 0}
               </div>
-              <div className="text-dark-muted text-xs mt-1">명</div>
+              <div className="text-gray-900 dark:text-gray-400 text-xs mt-1">명</div>
             </div>
             <div className="glass-card p-5 text-center">
-              <div className="text-dark-muted text-sm mb-2">전체 방문자</div>
+              <div className="text-gray-900 dark:text-gray-400 text-sm mb-2">전체 방문자</div>
               <div className="text-3xl font-bold text-purple-400">
                 {result.blog_info.total_visitors?.toLocaleString() || 0}
               </div>
-              <div className="text-dark-muted text-xs mt-1">명</div>
+              <div className="text-gray-900 dark:text-gray-400 text-xs mt-1">명</div>
             </div>
             <div className="glass-card p-5 text-center">
-              <div className="text-dark-muted text-sm mb-2">월 발행수</div>
+              <div className="text-gray-900 dark:text-gray-400 text-sm mb-2">월 발행수</div>
               <div className="text-3xl font-bold text-orange-400">
                 {result.blog_info.monthly_post_count?.toLocaleString() ?? '-'}
               </div>
-              <div className="text-dark-muted text-xs mt-1">최근 30일</div>
+              <div className="text-gray-900 dark:text-gray-400 text-xs mt-1">최근 30일</div>
             </div>
           </div>
 
@@ -505,7 +505,7 @@ export default function BlogDiagnose({ onNavigateToPostDiagnose }: BlogDiagnoseP
               <h2 className="text-lg font-semibold">
                 게시물 목록 ({result.posts.length}개)
               </h2>
-              <div className="flex items-center gap-2 text-xs text-dark-muted">
+              <div className="flex items-center gap-2 text-xs text-gray-900 dark:text-gray-400">
                 <span className="flex items-center gap-1">
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -519,7 +519,7 @@ export default function BlogDiagnose({ onNavigateToPostDiagnose }: BlogDiagnoseP
                 {result.posts.map((post, idx) => (
                   <div
                     key={idx}
-                    className="p-4 bg-dark-bg rounded-lg hover:bg-dark-hover transition"
+                    className="p-4 bg-gray-50 dark:bg-[#0f0f0f] rounded-lg hover:bg-gray-100 dark:hover:bg-[#252525] transition"
                   >
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -536,9 +536,9 @@ export default function BlogDiagnose({ onNavigateToPostDiagnose }: BlogDiagnoseP
                         >
                           {post.title || '(제목 없음)'}
                         </a>
-                        <span className="text-sm text-dark-muted whitespace-nowrap shrink-0">{post.date}</span>
+                        <span className="text-sm text-gray-900 dark:text-gray-400 whitespace-nowrap shrink-0">{post.date}</span>
                         {post.comment_count > 0 && (
-                          <span className="text-sm text-dark-muted whitespace-nowrap shrink-0">댓글 {post.comment_count}</span>
+                          <span className="text-sm text-gray-900 dark:text-gray-400 whitespace-nowrap shrink-0">댓글 {post.comment_count}</span>
                         )}
                       </div>
                       <div className="flex items-center gap-4 shrink-0">
@@ -558,7 +558,7 @@ export default function BlogDiagnose({ onNavigateToPostDiagnose }: BlogDiagnoseP
                 ))}
               </div>
             ) : (
-              <div className="text-center text-dark-muted py-8">
+              <div className="text-center text-gray-900 dark:text-gray-400 py-8">
                 게시물을 찾을 수 없습니다.
               </div>
             )}

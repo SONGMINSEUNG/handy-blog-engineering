@@ -139,16 +139,16 @@ function ApiSettingsModal({ isOpen, onClose, onSaveSuccess }: ApiSettingsModalPr
       className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 fade-in"
       onClick={handleBackdropClick}
     >
-      <div className="bg-dark-card border border-dark-border rounded-xl w-full max-w-md mx-4 shadow-2xl">
+      <div className="bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-700 rounded-xl w-full max-w-md mx-4 shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-dark-border">
+        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-lg font-semibold">네이버 광고 API 설정</h2>
           <button
             onClick={onClose}
-            className="p-1 hover:bg-dark-hover rounded-lg transition"
+            className="p-1 hover:bg-gray-100 dark:hover:bg-[#252525] rounded-lg transition"
           >
             <svg
-              className="w-5 h-5 text-dark-muted hover:text-dark-text"
+              className="w-5 h-5 text-gray-900 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -173,7 +173,7 @@ function ApiSettingsModal({ isOpen, onClose, onSaveSuccess }: ApiSettingsModalPr
             <>
               {/* CUSTOMER_ID */}
               <div>
-                <label className="block text-sm font-medium text-dark-muted mb-1">
+                <label className="block text-sm font-medium text-gray-900 dark:text-gray-400 mb-1">
                   CUSTOMER_ID
                 </label>
                 <input
@@ -181,13 +181,13 @@ function ApiSettingsModal({ isOpen, onClose, onSaveSuccess }: ApiSettingsModalPr
                   value={settings.customer_id}
                   onChange={handleChange('customer_id')}
                   placeholder="네이버 광고 고객 ID"
-                  className="w-full px-3 py-2 bg-dark-bg border border-dark-border rounded-lg text-dark-text placeholder-dark-muted focus:outline-none focus:border-naver-green transition"
+                  className="w-full px-3 py-2 bg-gray-50 dark:bg-[#0f0f0f] border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-naver-green transition"
                 />
               </div>
 
               {/* API_KEY */}
               <div>
-                <label className="block text-sm font-medium text-dark-muted mb-1">
+                <label className="block text-sm font-medium text-gray-900 dark:text-gray-400 mb-1">
                   API_KEY
                 </label>
                 <input
@@ -195,13 +195,13 @@ function ApiSettingsModal({ isOpen, onClose, onSaveSuccess }: ApiSettingsModalPr
                   value={settings.api_key}
                   onChange={handleChange('api_key')}
                   placeholder="API 액세스 라이센스"
-                  className="w-full px-3 py-2 bg-dark-bg border border-dark-border rounded-lg text-dark-text placeholder-dark-muted focus:outline-none focus:border-naver-green transition"
+                  className="w-full px-3 py-2 bg-gray-50 dark:bg-[#0f0f0f] border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-naver-green transition"
                 />
               </div>
 
               {/* SECRET_KEY */}
               <div>
-                <label className="block text-sm font-medium text-dark-muted mb-1">
+                <label className="block text-sm font-medium text-gray-900 dark:text-gray-400 mb-1">
                   SECRET_KEY
                 </label>
                 <div className="relative">
@@ -210,12 +210,12 @@ function ApiSettingsModal({ isOpen, onClose, onSaveSuccess }: ApiSettingsModalPr
                     value={settings.secret_key}
                     onChange={handleChange('secret_key')}
                     placeholder="API 비밀키"
-                    className="w-full px-3 py-2 pr-16 bg-dark-bg border border-dark-border rounded-lg text-dark-text placeholder-dark-muted focus:outline-none focus:border-naver-green transition"
+                    className="w-full px-3 py-2 pr-16 bg-gray-50 dark:bg-[#0f0f0f] border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-naver-green transition"
                   />
                   <button
                     type="button"
                     onClick={() => setShowSecretKey(!showSecretKey)}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 px-2 py-1 text-xs text-dark-muted hover:text-dark-text transition"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 px-2 py-1 text-xs text-gray-900 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition"
                   >
                     {showSecretKey ? '숨기기' : '보기'}
                   </button>
@@ -236,7 +236,7 @@ function ApiSettingsModal({ isOpen, onClose, onSaveSuccess }: ApiSettingsModalPr
               )}
 
               {/* 도움말 */}
-              <div className="text-xs text-dark-muted">
+              <div className="text-xs text-gray-900 dark:text-gray-400">
                 <p>네이버 광고 API 키는 네이버 검색광고 관리자 페이지에서 발급받을 수 있습니다.</p>
                 <a
                   href="https://manage.searchad.naver.com/"
@@ -252,11 +252,11 @@ function ApiSettingsModal({ isOpen, onClose, onSaveSuccess }: ApiSettingsModalPr
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 p-4 border-t border-dark-border">
+        <div className="flex items-center justify-end gap-3 p-4 border-t border-gray-200 dark:border-gray-700">
           <button
             onClick={handleTest}
             disabled={isTesting || isLoading}
-            className="px-4 py-2 bg-dark-border hover:bg-dark-hover text-dark-text font-medium rounded-lg transition disabled:opacity-50"
+            className="px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-[#252525] text-gray-900 dark:text-gray-100 font-medium rounded-lg transition disabled:opacity-50"
           >
             {isTesting ? (
               <span className="flex items-center gap-2">

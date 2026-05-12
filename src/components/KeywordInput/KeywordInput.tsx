@@ -38,11 +38,11 @@ export default function KeywordInput({ keywords, onKeywordsChange }: KeywordInpu
 
   return (
     <div className="glass-card p-6">
-      <label className="block text-sm font-medium text-dark-muted mb-3">
+      <label className="block text-sm font-medium text-gray-900 dark:text-gray-400 mb-3">
         분석할 키워드 ({keywords.length}개)
       </label>
 
-      <div className="flex flex-wrap gap-2 p-4 bg-dark-bg rounded-lg border border-dark-border min-h-[80px] w-full">
+      <div className="flex flex-wrap gap-2 p-4 bg-gray-50 dark:bg-[#0f0f0f] rounded-lg border border-gray-200 dark:border-gray-700 min-h-[80px] w-full">
         {keywords.map((keyword, index) => (
           <span
             key={index}
@@ -51,7 +51,7 @@ export default function KeywordInput({ keywords, onKeywordsChange }: KeywordInpu
             {keyword}
             <button
               onClick={() => removeKeyword(index)}
-              className="hover:text-dark-text transition"
+              className="hover:text-gray-900 dark:hover:text-gray-100 transition"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -67,11 +67,11 @@ export default function KeywordInput({ keywords, onKeywordsChange }: KeywordInpu
           onCompositionStart={handleCompositionStart}
           onCompositionEnd={handleCompositionEnd}
           placeholder={keywords.length === 0 ? "키워드를 입력하고 Enter를 누르세요..." : ""}
-          className="flex-1 min-w-[200px] bg-transparent outline-none text-dark-text placeholder-dark-muted"
+          className="flex-1 min-w-[200px] bg-transparent outline-none text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
         />
       </div>
 
-      <p className="text-xs text-dark-muted mt-2">
+      <p className="text-xs text-gray-900 dark:text-gray-400 mt-2">
         Enter로 키워드 추가, Backspace로 마지막 키워드 삭제
       </p>
     </div>

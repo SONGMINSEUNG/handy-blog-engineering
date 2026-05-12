@@ -9,6 +9,7 @@ import {
   getBidPrice,
   getNaverAdSettings,
   getRelatedKeywords,
+  splitKeyword,
   BidPriceData,
   RelatedKeywordsResponse,
   RelatedKeywordItem,
@@ -107,6 +108,171 @@ const sectionTypeToKorean: Record<string, string> = {
   '인기글': '인기글',
 };
 
+// 관련 키워드를 입력 키워드와의 관련도 순으로 정렬하는 함수
+// 1순위: 입력 키워드로 시작하거나 정확히 일치 (뒤에 뭔가 붙은 것) -> 검색량순
+// 2순위: 입력 키워드 앞에 뭔가 붙은 것 (입력 키워드를 포함하지만 시작이 아님) -> 검색량순
+// 3순위: 입력 키워드의 일부 단어만 포함 -> 검색량순
+// 4순위: 나머지 -> 검색량순
+function sortRelatedKeywordsByRelevance(
+  keywords: RelatedKeywordItem[],
+  inputKeyword: string,
+  externalSplitWords?: string[]
+): RelatedKeywordItem[] {
+  const input = inputKeyword.trim().toLowerCase();
+  if (!input) return keywords;
+
+  // 공백 제거 버전 (숏폼대행 vs 숏폼 대행 매칭용)
+  const inputNoSpace = input.replace(/\s+/g, '');
+  // 공백으로 나눈 단어들 (Kiwi 분리 결과가 있으면 우선 사용)
+  const inputSplitWords = externalSplitWords && externalSplitWords.length > 1
+    ? externalSplitWords.map(w => w.toLowerCase())
+    : input.split(/\s+/).filter(w => w.length > 0);
+
+  // 입력의 연속 부분문자열 생성 (최소 2글자)
+  // 예: "숏폼대행" -> ["숏폼", "폼대", "대행", "숏폼대", "폼대행", "숏폼대행"]
+  const inputSubstrings: string[] = [];
+  for (let len = 2; len <= inputNoSpace.length; len++) {
+    for (let start = 0; start <= inputNoSpace.length - len; start++) {
+      inputSubstrings.push(inputNoSpace.substring(start, start + len));
+    }
+  }
+
+  function getGroup(item: RelatedKeywordItem): number {
+    const kw = item.keyword.toLowerCase().trim();
+    const kwNoSpace = kw.replace(/\s+/g, '');
+    const kwSplitWords = kw.split(/\s+/).filter(w => w.length > 0);
+
+    // 1순위: 키워드가 입력으로 시작 (뒤에 뭔가 더 붙은 확장형) 또는 정확히 일치
+    // 예: "숏폼대행" -> "숏폼대행업체", "숏폼대행가격" (kwNoSpace가 inputNoSpace로 시작)
+    // 예: "숏폼대행" -> "숏폼대행" 자체 (정확히 일치)
+    if (kwNoSpace.startsWith(inputNoSpace)) return 1;
+
+    // 2순위: 키워드가 입력을 포함 (앞에 뭔가 붙음)
+    // 예: "인스타숏폼대행" contains "숏폼대행"
+    if (kwNoSpace.includes(inputNoSpace)) return 2;
+
+    // 3순위: 부분 매칭 - 아래 중 하나라도 해당:
+    // a) 키워드(공백제거)가 입력(공백제거)의 부분문자열 (예: "숏폼"은 "숏폼대행"의 부분)
+    if (inputNoSpace.includes(kwNoSpace) && kwNoSpace.length >= 2) return 3;
+
+    // b) 입력의 각 단어(공백 분리)가 키워드에 포함
+    if (inputSplitWords.length > 1) {
+      const hasInputWordMatch = inputSplitWords.some(word => {
+        const wordNoSpace = word.replace(/\s+/g, '');
+        return wordNoSpace.length >= 2 && kwNoSpace.includes(wordNoSpace);
+      });
+      if (hasInputWordMatch) return 3;
+    }
+
+    // c) 키워드의 각 단어가 입력에 포함
+    if (kwSplitWords.length > 1) {
+      const hasKwWordMatch = kwSplitWords.some(word => {
+        const wordNoSpace = word.replace(/\s+/g, '');
+        return wordNoSpace.length >= 2 && inputNoSpace.includes(wordNoSpace);
+      });
+      if (hasKwWordMatch) return 3;
+    }
+
+    // d) 입력의 연속 부분문자열이 키워드에 포함 (예: "숏폼대행"의 부분문자열 "숏폼", "대행"이 키워드에 포함)
+    const hasSubstringMatch = inputSubstrings.some(sub => kwNoSpace.includes(sub));
+    if (hasSubstringMatch) return 3;
+
+    // 4순위: 나머지
+    return 4;
+  }
+
+  // 3순위 내에서 매칭 단어 수 계산
+  function getMatchCount(item: RelatedKeywordItem): number {
+    const kw = item.keyword.toLowerCase().replace(/\s+/g, '');
+    return inputSplitWords.filter(word => kw.includes(word)).length;
+  }
+
+  return [...keywords].sort((a, b) => {
+    const groupA = getGroup(a);
+    const groupB = getGroup(b);
+    if (groupA !== groupB) return groupA - groupB;
+
+    // 3순위 내에서 매칭 단어 수 내림차순 정렬
+    if (groupA === 3 && groupA === groupB) {
+      const matchA = getMatchCount(a);
+      const matchB = getMatchCount(b);
+      if (matchA !== matchB) return matchB - matchA;
+    }
+
+    // 같은 그룹/같은 매칭 수 내에서는 총 검색량 내림차순
+    return (b.total_search ?? 0) - (a.total_search ?? 0);
+  });
+}
+
+// 범용어 리스트 (핵심 키워드 판별용)
+const GENERIC_WORDS = new Set([
+  '블로그', '대행', '마케팅', '업체', '가격', '비용', '추천', '순위',
+  '방법', '후기', '사이트', '서비스', '전문', '관리', '운영', '제작',
+  '광고', '홍보', '상위노출', '최적화', '컨설팅', '에이전시', '회사',
+  '견적', '프로그램', '솔루션', '플랫폼', '채널', '콘텐츠', '포스팅',
+  '키워드', '검색', '온라인', '디지털', '소셜', '바이럴', '브랜딩',
+  '매체', '원고', '기획', '분석', '리포트', '효과', '전략', '성과',
+  '트래픽', '노출', '유입', '전환', '최저가', '무료', '이벤트',
+  '인스타', '인스타그램', '유튜브', '틱톡', '페이스북', '네이버',
+  '카카오', 'sns', 'seo',
+]);
+
+// 핵심 키워드 찾기: 범용어 필터링 + 출현 빈도 역수 방식
+function findCoreKeyword(
+  inputKeyword: string,
+  relatedKeywords: RelatedKeywordItem[],
+  externalSplitWords?: string[]
+): { keyword: string; reason: string } | null {
+  // Kiwi 분리 결과가 있으면 우선 사용, 없으면 공백 분리
+  const words = externalSplitWords && externalSplitWords.length > 1
+    ? externalSplitWords
+    : inputKeyword.trim().split(/\s+/);
+  if (words.length < 2) return null;
+
+  // 1단계: 범용어 필터링
+  const coreWords = words.filter(w => !GENERIC_WORDS.has(w.toLowerCase()));
+
+  // 범용어 제거 후 남은 단어가 핵심
+  if (coreWords.length > 0) {
+    const coreKeyword = coreWords.join(' ');
+
+    // 2단계: 남은 단어가 2개 이상이면 출현 빈도 역수로 순위
+    if (coreWords.length >= 2 && relatedKeywords.length > 0) {
+      const wordFreq: Record<string, number> = {};
+      for (const word of coreWords) {
+        const wLower = word.toLowerCase();
+        wordFreq[wLower] = relatedKeywords.filter(rk =>
+          rk.keyword.toLowerCase().includes(wLower)
+        ).length;
+      }
+      // 출현 빈도 낮은 순 (= 더 특수한 단어) 정렬
+      const sorted = [...coreWords].sort((a, b) =>
+        (wordFreq[a.toLowerCase()] || 0) - (wordFreq[b.toLowerCase()] || 0)
+      );
+      return { keyword: sorted[0], reason: `연관 키워드 ${relatedKeywords.length}개 중 ${wordFreq[sorted[0].toLowerCase()] || 0}개에만 등장` };
+    }
+
+    return { keyword: coreKeyword, reason: '범용어 제외 핵심 주제어' };
+  }
+
+  // 모든 단어가 범용어면 출현 빈도 역수로 판별
+  if (relatedKeywords.length > 0) {
+    const wordFreq: Record<string, number> = {};
+    for (const word of words) {
+      const wLower = word.toLowerCase();
+      wordFreq[wLower] = relatedKeywords.filter(rk =>
+        rk.keyword.toLowerCase().includes(wLower)
+      ).length;
+    }
+    const sorted = [...words].sort((a, b) =>
+      (wordFreq[a.toLowerCase()] || 0) - (wordFreq[b.toLowerCase()] || 0)
+    );
+    return { keyword: sorted[0], reason: `가장 특수한 주제어 (${wordFreq[sorted[0].toLowerCase()] || 0}/${relatedKeywords.length}개 등장)` };
+  }
+
+  return null;
+}
+
 // 에러 상태 타입
 interface ErrorState {
   message: string;
@@ -134,10 +300,17 @@ function KeywordSearch({ onOpenSettings, initialKeyword, onInitialKeywordConsume
   const [bidPriceError, setBidPriceError] = useState<string | null>(null);
   const [isApiConfigured, setIsApiConfigured] = useState(false);
 
+  // Kiwi 형태소 분리 결과 (공백 없는 키워드용)
+  const [splitWords, setSplitWords] = useState<string[]>([]);
+
   // 연관 키워드 관련 상태
   const [relatedKeywords, setRelatedKeywords] = useState<RelatedKeywordsResponse | null>(null);
   const [relatedLoading, setRelatedLoading] = useState(false);
   const [relatedError, setRelatedError] = useState<string | null>(null);
+
+  // 연관 키워드 정렬 상태
+  const [relatedSortKey, setRelatedSortKey] = useState<'relevance' | 'pc_search' | 'mobile_search' | 'total_search'>('relevance');
+  const [relatedSortDir, setRelatedSortDir] = useState<'asc' | 'desc'>('desc');
 
   // 연관 키워드 클릭 시 자동 검색용
   const [pendingSearch, setPendingSearch] = useState<string>('');
@@ -158,6 +331,39 @@ function KeywordSearch({ onOpenSettings, initialKeyword, onInitialKeywordConsume
         setIsApiConfigured(false);
       });
   }, []);
+
+  // 키워드 변경 시 Kiwi 형태소 분리 (공백 없는 키워드만)
+  useEffect(() => {
+    const trimmed = keyword.trim();
+    if (!trimmed) {
+      setSplitWords([]);
+      return;
+    }
+
+    // 공백이 이미 있으면 Kiwi 불필요 — 공백 분리 사용
+    if (trimmed.includes(' ')) {
+      setSplitWords(trimmed.split(/\s+/));
+      return;
+    }
+
+    // 공백 없는 키워드: 300ms 디바운스 후 Kiwi API 호출
+    const timer = setTimeout(async () => {
+      try {
+        const words = await splitKeyword(trimmed);
+        // Kiwi가 2개 이상으로 분리했을 때만 사용
+        if (words.length >= 2) {
+          setSplitWords(words);
+        } else {
+          setSplitWords([trimmed]);
+        }
+      } catch {
+        // 실패 시 원본 키워드 그대로 사용
+        setSplitWords([trimmed]);
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [keyword]);
 
   // 입찰가 조회 함수
   const fetchBidPrice = useCallback(async (searchKeyword: string) => {
@@ -195,11 +401,47 @@ function KeywordSearch({ onOpenSettings, initialKeyword, onInitialKeywordConsume
     }
   }, [isApiConfigured]);
 
+  // 정렬 적용된 연관 키워드
+  const sortedRelatedKeywords = useMemo(() => {
+    if (!relatedKeywords?.related_keywords) return [];
+    if (relatedSortKey === 'relevance') {
+      return sortRelatedKeywordsByRelevance(relatedKeywords.related_keywords, keyword, splitWords);
+    }
+    const sorted = [...relatedKeywords.related_keywords].sort((a, b) => {
+      const valA = a[relatedSortKey] ?? 0;
+      const valB = b[relatedSortKey] ?? 0;
+      return relatedSortDir === 'desc' ? valB - valA : valA - valB;
+    });
+    return sorted;
+  }, [relatedKeywords, keyword, splitWords, relatedSortKey, relatedSortDir]);
+
+  // 핵심 키워드 탐지
+  const coreKeyword = useMemo(() => {
+    if (!relatedKeywords?.related_keywords || !keyword) return null;
+    return findCoreKeyword(keyword, relatedKeywords.related_keywords, splitWords);
+  }, [relatedKeywords, keyword, splitWords]);
+
   // 연관 키워드 토글 변경 핸들러
   const handleRelatedToggle = useCallback((enabled: boolean) => {
     setRelatedEnabled(enabled);
     localStorage.setItem('relatedKeywordsEnabled', String(enabled));
   }, []);
+
+  // 연관 키워드 컬럼 정렬 핸들러
+  const handleRelatedSort = useCallback((key: 'relevance' | 'pc_search' | 'mobile_search' | 'total_search') => {
+    if (relatedSortKey === key) {
+      setRelatedSortDir(prev => prev === 'desc' ? 'asc' : 'desc');
+    } else {
+      setRelatedSortKey(key);
+      setRelatedSortDir('desc');
+    }
+  }, [relatedSortKey]);
+
+  // 정렬 화살표 표시
+  const getSortArrow = useCallback((key: 'relevance' | 'pc_search' | 'mobile_search' | 'total_search') => {
+    if (relatedSortKey !== key) return '';
+    return relatedSortDir === 'desc' ? ' ▼' : ' ▲';
+  }, [relatedSortKey, relatedSortDir]);
 
   // 입찰가 새로고침 핸들러
   const handleBidPriceRefresh = useCallback(async () => {
@@ -407,7 +649,7 @@ function KeywordSearch({ onOpenSettings, initialKeyword, onInitialKeywordConsume
           onChange={(e) => setKeyword(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="검색 키워드 입력..."
-          className="flex-1 px-4 py-3 bg-dark-bg border border-dark-border rounded-lg text-dark-text placeholder-dark-muted focus:outline-none focus:border-naver-green"
+          className="flex-1 px-4 py-3 bg-gray-50 dark:bg-[#0f0f0f] border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-naver-green"
         />
         <button
           onClick={handleSearch}
@@ -456,9 +698,9 @@ function KeywordSearch({ onOpenSettings, initialKeyword, onInitialKeywordConsume
       )}
 
       {loading && !result && (
-        <div className="flex flex-col items-center justify-center py-12">
+        <div className="flex flex-col items-center justify-center" style={{minHeight: 'calc(100vh - 300px)'}}>
           <div className="w-12 h-12 border-4 border-naver-green border-t-transparent rounded-full animate-spin"></div>
-          <p className="mt-4 text-dark-muted text-sm">
+          <p className="mt-4 text-gray-900 dark:text-gray-400 text-sm">
             {retryCount > 0 ? `재시도 중... (${retryCount}/3)` : '검색 중...'}
           </p>
         </div>
@@ -467,9 +709,9 @@ function KeywordSearch({ onOpenSettings, initialKeyword, onInitialKeywordConsume
       {result && (
         <div className="relative">
           {loading && (
-            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-dark-bg/70 rounded-lg backdrop-blur-sm">
+            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/70 dark:bg-[#0f0f0f]/70 rounded-lg backdrop-blur-sm">
               <div className="w-12 h-12 border-4 border-naver-green border-t-transparent rounded-full animate-spin"></div>
-              <p className="mt-4 text-dark-muted text-sm">
+              <p className="mt-4 text-gray-900 dark:text-gray-400 text-sm">
                 {retryCount > 0 ? `재시도 중... (${retryCount}/3)` : '검색 중...'}
               </p>
             </div>
@@ -479,26 +721,26 @@ function KeywordSearch({ onOpenSettings, initialKeyword, onInitialKeywordConsume
           <div className="glass-card p-6">
             <h2 className="text-lg font-semibold mb-4">기본 정보</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="p-4 bg-dark-bg rounded-lg">
-                <div className="text-dark-muted text-sm mb-1 whitespace-nowrap">월간 검색량</div>
+              <div className="p-4 bg-gray-50 dark:bg-[#0f0f0f] rounded-lg">
+                <div className="text-gray-900 dark:text-gray-400 text-sm mb-1 whitespace-nowrap">월간 검색량</div>
                 <div className="text-2xl font-bold text-naver-green whitespace-nowrap">
                   {result.search_volume?.total?.toLocaleString() || '-'}
                 </div>
               </div>
-              <div className="p-4 bg-dark-bg rounded-lg">
-                <div className="text-dark-muted text-sm mb-1 whitespace-nowrap">PC 검색량</div>
+              <div className="p-4 bg-gray-50 dark:bg-[#0f0f0f] rounded-lg">
+                <div className="text-gray-900 dark:text-gray-400 text-sm mb-1 whitespace-nowrap">PC 검색량</div>
                 <div className="text-xl font-medium whitespace-nowrap">
                   {result.search_volume?.pc?.toLocaleString() || '-'}
                 </div>
               </div>
-              <div className="p-4 bg-dark-bg rounded-lg">
-                <div className="text-dark-muted text-sm mb-1 whitespace-nowrap">모바일 검색량</div>
+              <div className="p-4 bg-gray-50 dark:bg-[#0f0f0f] rounded-lg">
+                <div className="text-gray-900 dark:text-gray-400 text-sm mb-1 whitespace-nowrap">모바일 검색량</div>
                 <div className="text-xl font-medium whitespace-nowrap">
                   {result.search_volume?.mobile?.toLocaleString() || '-'}
                 </div>
               </div>
-              <div className="p-4 bg-dark-bg rounded-lg">
-                <div className="text-dark-muted text-sm mb-1 whitespace-nowrap">파워링크 광고</div>
+              <div className="p-4 bg-gray-50 dark:bg-[#0f0f0f] rounded-lg">
+                <div className="text-gray-900 dark:text-gray-400 text-sm mb-1 whitespace-nowrap">파워링크 광고</div>
                 <div className="text-xl font-medium text-red-400 whitespace-nowrap">
                   {result.ad_count}개
                 </div>
@@ -507,12 +749,12 @@ function KeywordSearch({ onOpenSettings, initialKeyword, onInitialKeywordConsume
             {/* 추가 정보: 월 발행수 */}
             {result.search_volume?.monthly_blog_count != null && (
               <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="p-4 bg-dark-bg rounded-lg">
-                  <div className="text-dark-muted text-sm mb-1 whitespace-nowrap">월 발행수</div>
+                <div className="p-4 bg-gray-50 dark:bg-[#0f0f0f] rounded-lg">
+                  <div className="text-gray-900 dark:text-gray-400 text-sm mb-1 whitespace-nowrap">월 발행수</div>
                   <div className="text-xl font-medium text-orange-400 whitespace-nowrap">
                     {result.search_volume.monthly_blog_count.toLocaleString()}건
                   </div>
-                  <div className="text-dark-muted text-[10px] mt-1">최근 1개월 블로그 글</div>
+                  <div className="text-gray-900 dark:text-gray-400 text-[10px] mt-1">최근 1개월 블로그 글</div>
                 </div>
               </div>
             )}
@@ -541,7 +783,7 @@ function KeywordSearch({ onOpenSettings, initialKeyword, onInitialKeywordConsume
             <h2 className="text-lg font-semibold mb-4">
               섹션 순서
               {result.ai_recommendation?.exists && (
-                <span className="ml-3 text-sm px-2 py-1 bg-purple-600 rounded whitespace-nowrap">
+                <span className="ml-3 text-sm px-2 py-1 bg-purple-600 text-white rounded whitespace-nowrap">
                   AI 추천 {result.ai_recommendation.section_index}번째
                 </span>
               )}
@@ -568,14 +810,14 @@ function KeywordSearch({ onOpenSettings, initialKeyword, onInitialKeywordConsume
                 return (
                   <div
                     key={idx}
-                    className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg whitespace-nowrap ${color} ${
-                      isAI ? 'ring-2 ring-purple-400 ring-offset-2 ring-offset-dark-bg' : ''
+                    className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg whitespace-nowrap text-white ${color} ${
+                      isAI ? 'ring-2 ring-purple-400 ring-offset-2 ring-offset-gray-50 dark:ring-offset-[#0f0f0f]' : ''
                     } ${isPowerLink ? 'border-2 border-red-300' : ''}`}
                   >
-                    <span className="w-5 h-5 flex items-center justify-center bg-black/20 rounded-full text-xs font-bold">
+                    <span className="w-5 h-5 flex items-center justify-center bg-black/20 rounded-full text-xs font-bold text-white">
                       {section.order}
                     </span>
-                    <span className="font-medium text-sm whitespace-nowrap">{displayType}</span>
+                    <span className="font-medium text-sm whitespace-nowrap text-white">{displayType}</span>
                     {/* 파워링크는 갯수를 더 눈에 띄게 표시 */}
                     {isPowerLink && section.count !== undefined && section.count > 0 && (
                       <span className="ml-1 px-2 py-0.5 bg-white/20 rounded font-bold text-sm whitespace-nowrap">
@@ -616,27 +858,27 @@ function KeywordSearch({ onOpenSettings, initialKeyword, onInitialKeywordConsume
               <div className="glass-card p-6">
                 <h2 className="text-lg font-semibold mb-4">
                   상위노출 블로그 키워드 빈도
-                  <span className="ml-2 text-sm text-dark-muted font-normal">
+                  <span className="ml-2 text-sm text-gray-900 dark:text-gray-400 font-normal">
                     상위 {analysis.length}개 블로그 본문 분석
                   </span>
                 </h2>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b border-dark-border">
-                        <th className="px-4 py-2 text-left text-dark-muted w-16">#</th>
-                        <th className="px-4 py-2 text-left text-dark-muted">블로그</th>
+                      <tr className="border-b border-gray-200 dark:border-gray-700">
+                        <th className="px-4 py-2 text-left text-gray-900 dark:text-gray-400 w-16">#</th>
+                        <th className="px-4 py-2 text-left text-gray-900 dark:text-gray-400">블로그</th>
                         {keywordKeys.map((key) => (
-                          <th key={key} className="px-4 py-2 text-center text-dark-muted whitespace-nowrap">
+                          <th key={key} className="px-4 py-2 text-center text-gray-900 dark:text-gray-400 whitespace-nowrap">
                             {key}
                           </th>
                         ))}
-                        <th className="px-4 py-2 text-right text-dark-muted">글자수</th>
+                        <th className="px-4 py-2 text-right text-gray-900 dark:text-gray-400">글자수</th>
                       </tr>
                     </thead>
                     <tbody>
                       {analysis.map((item) => (
-                        <tr key={item.rank} className="border-b border-dark-border/30 hover:bg-dark-hover">
+                        <tr key={item.rank} className="border-b border-gray-200/30 dark:border-gray-700/30 hover:bg-gray-100 dark:hover:bg-[#252525]">
                           <td className="px-4 py-3 font-bold text-naver-green whitespace-nowrap">
                             {item.rank}위
                             {item.is_ad && (
@@ -661,36 +903,36 @@ function KeywordSearch({ onOpenSettings, initialKeyword, onInitialKeywordConsume
                             return (
                               <td key={key} className="px-4 py-3 text-center">
                                 <span className={`font-mono font-medium ${
-                                  count === 0 ? 'text-dark-muted' : isAboveAvg ? 'text-naver-green' : 'text-dark-text'
+                                  count === 0 ? 'text-gray-900 dark:text-gray-400' : isAboveAvg ? 'text-naver-green' : 'text-gray-900 dark:text-gray-100'
                                 }`}>
                                   {count}
                                 </span>
                               </td>
                             );
                           })}
-                          <td className="px-4 py-3 text-right font-mono text-dark-muted">
+                          <td className="px-4 py-3 text-right font-mono text-gray-900 dark:text-gray-400">
                             {item.content_length.toLocaleString()}
                           </td>
                         </tr>
                       ))}
                       {/* 평균 행 */}
-                      <tr className="border-t-2 border-dark-border bg-dark-bg/50">
-                        <td className="px-4 py-3 font-bold text-yellow-400" colSpan={2}>
+                      <tr className="border-t-2 border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-[#0f0f0f]/50">
+                        <td className="px-4 py-3 font-bold text-amber-600 dark:text-yellow-400" colSpan={2}>
                           평균
                         </td>
                         {keywordKeys.map((key) => (
-                          <td key={key} className="px-4 py-3 text-center font-mono font-bold text-yellow-400">
+                          <td key={key} className="px-4 py-3 text-center font-mono font-bold text-amber-600 dark:text-yellow-400">
                             {averages[key]}
                           </td>
                         ))}
-                        <td className="px-4 py-3 text-right font-mono font-bold text-yellow-400">
+                        <td className="px-4 py-3 text-right font-mono font-bold text-amber-600 dark:text-yellow-400">
                           {Math.round(analysis.reduce((acc, item) => acc + item.content_length, 0) / analysis.length).toLocaleString()}
                         </td>
                       </tr>
                     </tbody>
                   </table>
                 </div>
-                <p className="text-dark-muted text-xs mt-3">
+                <p className="text-gray-900 dark:text-gray-400 text-xs mt-3">
                   * 상위노출 블로그 본문에서 키워드가 등장한 횟수입니다. (공백 무관 매칭)
                 </p>
               </div>
@@ -703,10 +945,10 @@ function KeywordSearch({ onOpenSettings, initialKeyword, onInitialKeywordConsume
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-dark-border">
-                    <th className="px-4 py-2 text-left text-dark-muted w-20">순위</th>
-                    <th className="px-4 py-2 text-left text-dark-muted w-24">타입</th>
-                    <th className="px-4 py-2 text-left text-dark-muted">제목</th>
+                  <tr className="border-b border-gray-200 dark:border-gray-700">
+                    <th className="px-4 py-2 text-left text-gray-900 dark:text-gray-400 w-20">순위</th>
+                    <th className="px-4 py-2 text-left text-gray-900 dark:text-gray-400 w-24">타입</th>
+                    <th className="px-4 py-2 text-left text-gray-900 dark:text-gray-400">제목</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -774,13 +1016,13 @@ function KeywordSearch({ onOpenSettings, initialKeyword, onInitialKeywordConsume
                       return (
                         <React.Fragment key={sectionKey}>
                           {/* 그룹 헤더 */}
-                          <tr className="bg-dark-bg/50">
+                          <tr className="bg-gray-50/50 dark:bg-[#0f0f0f]/50">
                             <td colSpan={3} className="px-4 py-2">
                               <div className="flex items-center gap-2">
                                 <span className={`px-2 py-0.5 rounded text-xs ${sectionBgColor} text-white font-medium whitespace-nowrap`}>
                                   {sectionKey.replace(/ \d+$/, '')}
                                 </span>
-                                <span className="text-dark-muted text-xs whitespace-nowrap">
+                                <span className="text-gray-900 dark:text-gray-400 text-xs whitespace-nowrap">
                                   {items.length}개
                                 </span>
                               </div>
@@ -791,8 +1033,8 @@ function KeywordSearch({ onOpenSettings, initialKeyword, onInitialKeywordConsume
                             const color = typeColors[item.type] || { bg: 'bg-gray-600', text: 'text-white' };
                             const label = typeLabels[item.type] || item.type;
                             return (
-                              <tr key={`${sectionKey}-${idx}`} className="border-b border-dark-border/30 hover:bg-dark-hover">
-                                <td className="px-4 py-3 text-dark-muted text-xs">
+                              <tr key={`${sectionKey}-${idx}`} className="border-b border-gray-200/30 dark:border-gray-700/30 hover:bg-gray-100 dark:hover:bg-[#252525]">
+                                <td className="px-4 py-3 text-gray-900 dark:text-gray-400 text-xs">
                                   {item.rank}위
                                 </td>
                                 <td className="px-4 py-3">
@@ -855,7 +1097,7 @@ function KeywordSearch({ onOpenSettings, initialKeyword, onInitialKeywordConsume
                   <h2 className="text-lg font-semibold">
                     연관 키워드
                     {relatedKeywords && !relatedLoading && relatedEnabled && (
-                      <span className="ml-2 text-sm font-normal text-dark-muted">
+                      <span className="ml-2 text-sm font-normal text-gray-900 dark:text-gray-400">
                         ({relatedKeywords.total_count}개)
                       </span>
                     )}
@@ -868,8 +1110,8 @@ function KeywordSearch({ onOpenSettings, initialKeyword, onInitialKeywordConsume
                       onChange={(e) => handleRelatedToggle(e.target.checked)}
                       className="sr-only peer"
                     />
-                    <div className="w-9 h-5 bg-dark-border rounded-full peer peer-checked:bg-naver-green peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"></div>
-                    <span className="ml-2 text-sm text-dark-muted">
+                    <div className="w-9 h-5 bg-gray-200 dark:bg-gray-700 rounded-full peer peer-checked:bg-naver-green peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"></div>
+                    <span className="ml-2 text-sm text-gray-900 dark:text-gray-400">
                       {relatedEnabled ? 'ON' : 'OFF'}
                     </span>
                   </label>
@@ -877,7 +1119,7 @@ function KeywordSearch({ onOpenSettings, initialKeyword, onInitialKeywordConsume
                 {relatedKeywords && !relatedLoading && relatedEnabled && (
                   <button
                     onClick={() => fetchRelatedKeywords(keyword.trim())}
-                    className="text-sm text-dark-muted hover:text-dark-text transition"
+                    className="text-sm text-gray-900 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition"
                   >
                     새로고침
                   </button>
@@ -887,7 +1129,7 @@ function KeywordSearch({ onOpenSettings, initialKeyword, onInitialKeywordConsume
               {relatedEnabled && relatedLoading && (
                 <div className="flex items-center justify-center py-8">
                   <div className="w-8 h-8 border-3 border-naver-green border-t-transparent rounded-full animate-spin"></div>
-                  <span className="ml-3 text-dark-muted text-sm">연관 키워드 조회 중...</span>
+                  <span className="ml-3 text-gray-900 dark:text-gray-400 text-sm">연관 키워드 조회 중...</span>
                 </div>
               )}
 
@@ -897,22 +1139,47 @@ function KeywordSearch({ onOpenSettings, initialKeyword, onInitialKeywordConsume
                 </div>
               )}
 
+              {relatedEnabled && relatedKeywords && !relatedLoading && !relatedError && coreKeyword && (
+                <div className="mb-3 px-4 py-2.5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/50 rounded-lg flex items-center gap-2">
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-amber-500 text-white">
+                    핵심 키워드
+                  </span>
+                  <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{coreKeyword.keyword}</span>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">({coreKeyword.reason})</span>
+                </div>
+              )}
+
               {relatedEnabled && relatedKeywords && !relatedLoading && !relatedError && (
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b border-dark-border">
-                        <th className="px-4 py-2 text-left text-dark-muted w-12">#</th>
-                        <th className="px-4 py-2 text-left text-dark-muted">키워드</th>
-                        <th className="px-4 py-2 text-right text-dark-muted">PC 검색량</th>
-                        <th className="px-4 py-2 text-right text-dark-muted">모바일 검색량</th>
-                        <th className="px-4 py-2 text-right text-dark-muted">월 검색량</th>
+                      <tr className="border-b border-gray-200 dark:border-gray-700">
+                        <th
+                          className="px-4 py-2 text-left text-gray-900 dark:text-gray-400 w-12 cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+                          onClick={() => handleRelatedSort('relevance')}
+                        >#{getSortArrow('relevance')}</th>
+                        <th
+                          className="px-4 py-2 text-left text-gray-900 dark:text-gray-400 cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+                          onClick={() => handleRelatedSort('relevance')}
+                        >키워드{getSortArrow('relevance') ? '' : ''}</th>
+                        <th
+                          className="px-4 py-2 text-right text-gray-900 dark:text-gray-400 cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+                          onClick={() => handleRelatedSort('pc_search')}
+                        >PC 검색량{getSortArrow('pc_search')}</th>
+                        <th
+                          className="px-4 py-2 text-right text-gray-900 dark:text-gray-400 cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+                          onClick={() => handleRelatedSort('mobile_search')}
+                        >모바일 검색량{getSortArrow('mobile_search')}</th>
+                        <th
+                          className="px-4 py-2 text-right text-gray-900 dark:text-gray-400 cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+                          onClick={() => handleRelatedSort('total_search')}
+                        >월 검색량{getSortArrow('total_search')}</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {relatedKeywords.related_keywords.map((item: RelatedKeywordItem, idx: number) => {
+                      {sortedRelatedKeywords.map((item: RelatedKeywordItem, idx: number) => {
                         // 상위 10% 키워드에 하이라이트
-                        const topThreshold = Math.max(1, Math.floor(relatedKeywords.related_keywords.length * 0.1));
+                        const topThreshold = Math.max(1, Math.floor(sortedRelatedKeywords.length * 0.1));
                         const isTop = idx < topThreshold;
                         // 원본 키워드와 동일한 경우 강조
                         const isOriginal = item.keyword.replace(/\s/g, '') === keyword.trim().replace(/\s/g, '');
@@ -920,11 +1187,11 @@ function KeywordSearch({ onOpenSettings, initialKeyword, onInitialKeywordConsume
                         return (
                           <tr
                             key={idx}
-                            className={`border-b border-dark-border/30 hover:bg-dark-hover ${
+                            className={`border-b border-gray-200/30 dark:border-gray-700/30 hover:bg-gray-100 dark:hover:bg-[#252525] ${
                               isOriginal ? 'bg-naver-green/10' : isTop ? 'bg-yellow-500/5' : ''
                             }`}
                           >
-                            <td className="px-4 py-2.5 text-dark-muted">{idx + 1}</td>
+                            <td className="px-4 py-2.5 text-gray-900 dark:text-gray-400">{idx + 1}</td>
                             <td className="px-4 py-2.5">
                               {isOriginal ? (
                                 <span className="text-naver-green font-bold">
@@ -939,7 +1206,7 @@ function KeywordSearch({ onOpenSettings, initialKeyword, onInitialKeywordConsume
                                     setKeyword(item.keyword);
                                     setPendingSearch(item.keyword);
                                   }}
-                                  className={`${isTop ? 'text-yellow-400 font-medium' : 'text-dark-text'} hover:text-naver-green hover:underline cursor-pointer bg-transparent border-none p-0 text-left`}
+                                  className={`${isTop ? 'text-amber-600 dark:text-yellow-400 font-medium' : 'text-gray-900 dark:text-gray-100'} hover:text-naver-green hover:underline cursor-pointer bg-transparent border-none p-0 text-left`}
                                 >
                                   {item.keyword}
                                 </button>
@@ -952,7 +1219,7 @@ function KeywordSearch({ onOpenSettings, initialKeyword, onInitialKeywordConsume
                               {item.mobile_search?.toLocaleString() ?? '-'}
                             </td>
                             <td className={`px-4 py-2.5 text-right font-mono font-medium ${
-                              isTop ? 'text-yellow-400' : 'text-naver-green'
+                              isTop ? 'text-amber-600 dark:text-yellow-400' : 'text-naver-green'
                             }`}>
                               {item.total_search?.toLocaleString() ?? '-'}
                             </td>
@@ -965,13 +1232,13 @@ function KeywordSearch({ onOpenSettings, initialKeyword, onInitialKeywordConsume
               )}
 
               {relatedEnabled && !relatedKeywords && !relatedLoading && !relatedError && (
-                <p className="text-dark-muted text-sm text-center py-4">
+                <p className="text-gray-900 dark:text-gray-400 text-sm text-center py-4">
                   키워드 검색 후 연관 키워드가 표시됩니다.
                 </p>
               )}
 
               {!relatedEnabled && (
-                <p className="text-dark-muted text-sm text-center py-4">
+                <p className="text-gray-900 dark:text-gray-400 text-sm text-center py-4">
                   연관 키워드 기능이 꺼져 있습니다.
                 </p>
               )}

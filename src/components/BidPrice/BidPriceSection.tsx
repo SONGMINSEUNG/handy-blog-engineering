@@ -41,9 +41,9 @@ interface BidPriceSectionProps {
 
 // 스켈레톤 UI 컴포넌트
 const SkeletonCard = memo(() => (
-  <div className="p-4 bg-dark-bg rounded-lg animate-pulse">
-    <div className="h-4 bg-dark-border rounded w-24 mb-3"></div>
-    <div className="h-8 bg-dark-border rounded w-20"></div>
+  <div className="p-4 bg-gray-50 dark:bg-[#0f0f0f] rounded-lg animate-pulse">
+    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24 mb-3"></div>
+    <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-20"></div>
   </div>
 ));
 
@@ -52,7 +52,7 @@ SkeletonCard.displayName = 'SkeletonCard';
 // 경쟁 정도 배지 컴포넌트
 const CompetitionBadge = memo(({ competition }: { competition: string | null }) => {
   if (!competition || competition === '정보없음') {
-    return <span className="text-dark-muted">-</span>;
+    return <span className="text-gray-900 dark:text-gray-400">-</span>;
   }
 
   const getColorClass = () => {
@@ -60,11 +60,11 @@ const CompetitionBadge = memo(({ competition }: { competition: string | null }) 
       case '높음':
         return 'bg-red-500/20 text-red-400 border-red-500';
       case '중간':
-        return 'bg-yellow-500/20 text-yellow-400 border-yellow-500';
+        return 'bg-yellow-500/20 text-amber-600 dark:text-yellow-400 border-yellow-500';
       case '낮음':
         return 'bg-green-500/20 text-green-400 border-green-500';
       default:
-        return 'bg-dark-border text-dark-muted border-dark-border';
+        return 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-400 border-gray-200 dark:border-gray-700';
     }
   };
 
@@ -119,9 +119,9 @@ function BidPriceSection({
           <h2 className="text-lg font-semibold">키워드 분석 정보</h2>
         </div>
         <div className="flex flex-col items-center justify-center py-8 text-center">
-          <div className="w-16 h-16 rounded-full bg-dark-bg flex items-center justify-center mb-4">
+          <div className="w-16 h-16 rounded-full bg-gray-50 dark:bg-[#0f0f0f] flex items-center justify-center mb-4">
             <svg
-              className="w-8 h-8 text-dark-muted"
+              className="w-8 h-8 text-gray-900 dark:text-gray-400"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -140,7 +140,7 @@ function BidPriceSection({
               />
             </svg>
           </div>
-          <p className="text-dark-muted mb-4">
+          <p className="text-gray-900 dark:text-gray-400 mb-4">
             키워드 분석 정보를 조회하려면 네이버 광고 API 설정이 필요합니다.
           </p>
           <button
@@ -207,7 +207,7 @@ function BidPriceSection({
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold">키워드 분석 정보</h2>
         </div>
-        <div className="text-center py-8 text-dark-muted">
+        <div className="text-center py-8 text-gray-900 dark:text-gray-400">
           키워드를 검색하면 분석 정보가 표시됩니다.
         </div>
       </div>
@@ -227,11 +227,11 @@ function BidPriceSection({
         <button
           onClick={handleRefresh}
           disabled={isRefreshing}
-          className="p-2 hover:bg-dark-hover rounded-lg transition"
+          className="p-2 hover:bg-gray-100 dark:hover:bg-[#252525] rounded-lg transition"
           title="새로고침"
         >
           <svg
-            className={`w-5 h-5 text-dark-muted hover:text-dark-text transition ${
+            className={`w-5 h-5 text-gray-900 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition ${
               isRefreshing ? 'animate-spin' : ''
             }`}
             fill="none"
@@ -252,9 +252,9 @@ function BidPriceSection({
       <div className="overflow-x-auto mb-6">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-dark-border">
-              <th className="px-4 py-2 text-left text-dark-muted">구분</th>
-              <th className="px-4 py-2 text-right text-dark-muted">
+            <tr className="border-b border-gray-200 dark:border-gray-700">
+              <th className="px-4 py-2 text-left text-gray-900 dark:text-gray-400">구분</th>
+              <th className="px-4 py-2 text-right text-gray-900 dark:text-gray-400">
                 <span className="flex items-center justify-end gap-2">
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -262,7 +262,7 @@ function BidPriceSection({
                   PC
                 </span>
               </th>
-              <th className="px-4 py-2 text-right text-dark-muted">
+              <th className="px-4 py-2 text-right text-gray-900 dark:text-gray-400">
                 <span className="flex items-center justify-end gap-2">
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
@@ -273,30 +273,30 @@ function BidPriceSection({
             </tr>
           </thead>
           <tbody>
-            <tr className="border-b border-dark-border/50 hover:bg-dark-hover transition">
-              <td className="px-4 py-3 text-dark-muted">월간 검색량</td>
-              <td className="px-4 py-3 text-right text-dark-text font-medium">
+            <tr className="border-b border-gray-200/50 dark:border-gray-700/50 hover:bg-gray-100 dark:hover:bg-[#252525] transition">
+              <td className="px-4 py-3 text-gray-900 dark:text-gray-400">월간 검색량</td>
+              <td className="px-4 py-3 text-right text-gray-900 dark:text-gray-100 font-medium">
                 {formatNumber(data.pc_search_volume)}
               </td>
-              <td className="px-4 py-3 text-right text-dark-text font-medium">
+              <td className="px-4 py-3 text-right text-gray-900 dark:text-gray-100 font-medium">
                 {formatNumber(data.mobile_search_volume)}
               </td>
             </tr>
-            <tr className="border-b border-dark-border/50 hover:bg-dark-hover transition">
-              <td className="px-4 py-3 text-dark-muted">월간 클릭수</td>
-              <td className="px-4 py-3 text-right text-dark-text font-medium">
+            <tr className="border-b border-gray-200/50 dark:border-gray-700/50 hover:bg-gray-100 dark:hover:bg-[#252525] transition">
+              <td className="px-4 py-3 text-gray-900 dark:text-gray-400">월간 클릭수</td>
+              <td className="px-4 py-3 text-right text-gray-900 dark:text-gray-100 font-medium">
                 {formatNumber(data.pc_click_count)}
               </td>
-              <td className="px-4 py-3 text-right text-dark-text font-medium">
+              <td className="px-4 py-3 text-right text-gray-900 dark:text-gray-100 font-medium">
                 {formatNumber(data.mobile_click_count)}
               </td>
             </tr>
-            <tr className="border-b border-dark-border/50 hover:bg-dark-hover transition">
-              <td className="px-4 py-3 text-dark-muted">클릭률</td>
-              <td className="px-4 py-3 text-right text-dark-text font-medium">
+            <tr className="border-b border-gray-200/50 dark:border-gray-700/50 hover:bg-gray-100 dark:hover:bg-[#252525] transition">
+              <td className="px-4 py-3 text-gray-900 dark:text-gray-400">클릭률</td>
+              <td className="px-4 py-3 text-right text-gray-900 dark:text-gray-100 font-medium">
                 {formatPercent(data.pc_click_rate)}
               </td>
-              <td className="px-4 py-3 text-right text-dark-text font-medium">
+              <td className="px-4 py-3 text-right text-gray-900 dark:text-gray-100 font-medium">
                 {formatPercent(data.mobile_click_rate)}
               </td>
             </tr>
@@ -307,8 +307,8 @@ function BidPriceSection({
       {/* 경쟁 정도 및 최소 입찰가 */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         {/* 경쟁 정도 */}
-        <div className="p-4 bg-dark-bg rounded-lg">
-          <div className="text-dark-muted text-sm mb-2 flex items-center gap-2">
+        <div className="p-4 bg-gray-50 dark:bg-[#0f0f0f] rounded-lg">
+          <div className="text-gray-900 dark:text-gray-400 text-sm mb-2 flex items-center gap-2">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
             </svg>
@@ -317,7 +317,7 @@ function BidPriceSection({
           <div className="flex items-center gap-2">
             <CompetitionBadge competition={data.competition} />
             {data.competition_index !== null && data.competition_index > 0 && (
-              <span className="text-sm text-dark-muted">
+              <span className="text-sm text-gray-900 dark:text-gray-400">
                 (지수: {data.competition_index})
               </span>
             )}
@@ -325,8 +325,8 @@ function BidPriceSection({
         </div>
 
         {/* PC 최소 입찰가 */}
-        <div className="p-4 bg-dark-bg rounded-lg">
-          <div className="text-dark-muted text-sm mb-1 flex items-center gap-2">
+        <div className="p-4 bg-gray-50 dark:bg-[#0f0f0f] rounded-lg">
+          <div className="text-gray-900 dark:text-gray-400 text-sm mb-1 flex items-center gap-2">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
             </svg>
@@ -338,8 +338,8 @@ function BidPriceSection({
         </div>
 
         {/* 모바일 최소 입찰가 */}
-        <div className="p-4 bg-dark-bg rounded-lg">
-          <div className="text-dark-muted text-sm mb-1 flex items-center gap-2">
+        <div className="p-4 bg-gray-50 dark:bg-[#0f0f0f] rounded-lg">
+          <div className="text-gray-900 dark:text-gray-400 text-sm mb-1 flex items-center gap-2">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
             </svg>
@@ -353,7 +353,7 @@ function BidPriceSection({
 
       {/* 부분 에러 표시 (일부 데이터만 실패한 경우) */}
       {data.error && (
-        <div className="p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg text-yellow-400 text-sm mt-4">
+        <div className="p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg text-amber-600 dark:text-yellow-400 text-sm mt-4">
           <span className="font-medium">참고:</span> {data.error}
         </div>
       )}

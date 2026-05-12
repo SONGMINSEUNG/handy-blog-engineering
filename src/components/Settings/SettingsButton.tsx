@@ -9,11 +9,11 @@ function SettingsButton({ onClick, isConfigured }: SettingsButtonProps) {
   return (
     <button
       onClick={onClick}
-      className="relative p-2 hover:bg-dark-hover rounded-lg transition"
+      className="relative p-2 hover:bg-gray-100 dark:hover:bg-[#252525] rounded-lg transition"
       title={isConfigured ? 'API 설정 (설정됨)' : 'API 설정'}
     >
       <svg
-        className="w-5 h-5 text-dark-muted hover:text-dark-text transition"
+        className="w-5 h-5 text-gray-900 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition"
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"

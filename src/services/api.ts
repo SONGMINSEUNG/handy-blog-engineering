@@ -468,6 +468,7 @@ export interface TopContentItem {
   url: string;
   title: string;
   keyword_count: number;
+  keyword_counts?: Record<string, number>;
   title_keyword_count: number;
   image_count: number;
   content_length: number;
@@ -486,6 +487,7 @@ export interface TopContentAnalysisResult {
   top_contents: TopContentItem[];
   averages: {
     keyword_count: number;
+    keyword_counts?: Record<string, number>;
     image_count: number;
     content_length: number;
   };
@@ -691,6 +693,12 @@ export async function analyzeMorpheme(text: string, targetKeyword?: string): Pro
     target_keyword: targetKeyword,
   });
   return response.data;
+}
+
+// 키워드 명사 분리 (공백 없는 키워드 자동 분리)
+export async function splitKeyword(keyword: string): Promise<string[]> {
+  const response = await api.post('/morpheme/split-keyword', { keyword });
+  return response.data.words || [];
 }
 
 // Topic Keywords

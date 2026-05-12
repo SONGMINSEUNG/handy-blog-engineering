@@ -406,10 +406,10 @@ function App() {
   // ===== 인증 로딩 중 =====
   if (authLoading) {
     return (
-      <div className="h-screen flex items-center justify-center bg-dark-bg">
+      <div className="h-screen flex items-center justify-center bg-gray-50 dark:bg-[#0f0f0f] text-gray-900 dark:text-gray-100">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-naver-green border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-dark-muted">로딩 중...</p>
+          <p className="text-gray-900 dark:text-gray-400">로딩 중...</p>
         </div>
       </div>
     );
@@ -418,15 +418,15 @@ function App() {
   // ===== 로그인 안 된 상태: 로그인/회원가입 화면 =====
   if (!authUser) {
     return (
-      <div className="h-screen flex flex-col items-center justify-center bg-dark-bg px-4">
+      <div className="h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-[#0f0f0f] text-gray-900 dark:text-gray-100 px-4">
         <div className="w-full max-w-md">
           {/* 로고 */}
           <div className="text-center mb-8">
             <div className="w-16 h-16 rounded-2xl naver-gradient flex items-center justify-center mx-auto mb-4">
               <span className="text-white font-bold text-2xl">H</span>
             </div>
-            <h1 className="text-2xl font-bold text-dark-text">핸디 블로그 엔지니어링</h1>
-            <p className="text-dark-muted text-sm mt-2">로그인하여 모든 기능을 이용하세요</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">핸디 블로그 엔지니어링</h1>
+            <p className="text-gray-900 dark:text-gray-400 text-sm mt-2">로그인하여 모든 기능을 이용하세요</p>
           </div>
 
           {/* 카드 */}
@@ -438,7 +438,7 @@ function App() {
                 className={`flex-1 px-4 py-2.5 text-sm font-medium rounded-lg transition ${
                   authTab === 'login'
                     ? 'bg-naver-green text-white'
-                    : 'bg-dark-bg border border-dark-border text-dark-muted hover:text-dark-text'
+                    : 'bg-gray-50 dark:bg-[#0f0f0f] border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
                 }`}
               >
                 로그인
@@ -448,7 +448,7 @@ function App() {
                 className={`flex-1 px-4 py-2.5 text-sm font-medium rounded-lg transition ${
                   authTab === 'signup'
                     ? 'bg-naver-green text-white'
-                    : 'bg-dark-bg border border-dark-border text-dark-muted hover:text-dark-text'
+                    : 'bg-gray-50 dark:bg-[#0f0f0f] border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
                 }`}
               >
                 회원가입
@@ -464,7 +464,7 @@ function App() {
                   onChange={(e) => setAuthUsername(e.target.value)}
                   onKeyDown={handleAuthKeyDown}
                   placeholder="아이디"
-                  className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-lg text-dark-text placeholder-dark-muted focus:outline-none focus:border-naver-green"
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-[#0f0f0f] border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-naver-green"
                 />
                 <input
                   type="password"
@@ -472,7 +472,7 @@ function App() {
                   onChange={(e) => setAuthPassword(e.target.value)}
                   onKeyDown={handleAuthKeyDown}
                   placeholder="비밀번호"
-                  className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-lg text-dark-text placeholder-dark-muted focus:outline-none focus:border-naver-green"
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-[#0f0f0f] border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-naver-green"
                 />
                 <button
                   onClick={handleAuthLogin}
@@ -493,7 +493,7 @@ function App() {
                   onChange={(e) => setAuthUsername(e.target.value)}
                   onKeyDown={handleAuthKeyDown}
                   placeholder="아이디 (2자 이상)"
-                  className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-lg text-dark-text placeholder-dark-muted focus:outline-none focus:border-naver-green"
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-[#0f0f0f] border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-naver-green"
                 />
                 <input
                   type="password"
@@ -501,7 +501,7 @@ function App() {
                   onChange={(e) => setAuthPassword(e.target.value)}
                   onKeyDown={handleAuthKeyDown}
                   placeholder="비밀번호 (4자 이상)"
-                  className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-lg text-dark-text placeholder-dark-muted focus:outline-none focus:border-naver-green"
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-[#0f0f0f] border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-naver-green"
                 />
                 <input
                   type="password"
@@ -509,7 +509,7 @@ function App() {
                   onChange={(e) => setAuthPasswordConfirm(e.target.value)}
                   onKeyDown={handleAuthKeyDown}
                   placeholder="비밀번호 확인"
-                  className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-lg text-dark-text placeholder-dark-muted focus:outline-none focus:border-naver-green"
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-[#0f0f0f] border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-naver-green"
                 />
                 <button
                   onClick={handleAuthSignup}
@@ -533,7 +533,7 @@ function App() {
 
   // ===== 로그인 된 상태: 기존 앱 =====
   return (
-    <div className="h-screen flex bg-dark-bg">
+    <div className="h-screen flex bg-gray-50 dark:bg-[#0f0f0f] text-gray-900 dark:text-gray-100">
       {/* Sidebar */}
       <Sidebar
         activeTab={activeTab}
@@ -550,7 +550,7 @@ function App() {
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center">
               <div className="w-16 h-16 border-4 border-naver-green border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-              <p className="text-dark-muted">서버에 연결 중...</p>
+              <p className="text-gray-900 dark:text-gray-400">서버에 연결 중...</p>
             </div>
           </div>
         )}
@@ -567,7 +567,7 @@ function App() {
               <p className="text-red-400 mb-4">{error}</p>
               <button
                 onClick={() => window.location.reload()}
-                className="px-4 py-2 bg-dark-border hover:bg-dark-hover rounded-lg transition"
+                className="px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-[#252525] rounded-lg transition"
               >
                 다시 시도
               </button>
@@ -613,7 +613,7 @@ function App() {
                     <div className="w-full max-w-5xl mx-auto">
                       <div className="text-center mb-8">
                         <h2 className="text-2xl font-bold mb-2">대량 키워드 조회</h2>
-                        <p className="text-dark-muted">여러 키워드를 동시에 조회합니다.</p>
+                        <p className="text-gray-900 dark:text-gray-400">여러 키워드를 동시에 조회합니다.</p>
                       </div>
 
                       <KeywordInput
@@ -631,7 +631,7 @@ function App() {
                           disabled={keywords.length === 0}
                           className={`px-8 py-3 rounded-lg font-medium transition ${
                             keywords.length === 0
-                              ? 'bg-dark-border text-dark-muted cursor-not-allowed'
+                              ? 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-400 cursor-not-allowed'
                               : 'naver-gradient text-white hover:opacity-90'
                           }`}
                         >
@@ -639,7 +639,7 @@ function App() {
                         </button>
                       </div>
 
-                      <p className="text-dark-muted text-sm text-center mt-4">
+                      <p className="text-gray-900 dark:text-gray-400 text-sm text-center mt-4">
                         로그인 없이도 분석이 가능하지만, 일부 데이터는 제한될 수 있습니다.
                       </p>
                     </div>
@@ -654,12 +654,12 @@ function App() {
                       <div className="w-16 h-16 border-4 border-naver-green border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
 
                       {/* 랜덤 멘트 */}
-                      <p className="text-lg text-dark-text font-medium mb-3 transition-opacity duration-500">
+                      <p className="text-lg text-gray-900 dark:text-gray-100 font-medium mb-3 transition-opacity duration-500">
                         {loadingMessage}
                       </p>
 
                       {/* 현재 진행 상황 */}
-                      <p className="text-dark-muted text-sm mb-6">
+                      <p className="text-gray-900 dark:text-gray-400 text-sm mb-6">
                         {analysisStatus.current_task ? (
                           <>
                             <span className="text-naver-green font-medium">
@@ -678,13 +678,13 @@ function App() {
                       </p>
 
                       {/* 진행률 바 */}
-                      <div className="w-full bg-dark-border rounded-full h-2.5 mb-2">
+                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 mb-2">
                         <div
                           className="bg-naver-green h-2.5 rounded-full transition-all duration-500 ease-out"
                           style={{ width: `${Math.max(analysisStatus.progress, 2)}%` }}
                         ></div>
                       </div>
-                      <p className="text-dark-muted text-xs">
+                      <p className="text-gray-900 dark:text-gray-400 text-xs">
                         {Math.round(analysisStatus.progress)}%
                       </p>
                     </div>
@@ -695,14 +695,14 @@ function App() {
                 {appStatus === 'completed' && results.length > 0 && (
                   <div className="flex-1 flex flex-col overflow-hidden">
                     {/* 요약 정보 */}
-                    <div className="px-6 py-4 border-b border-dark-border bg-dark-card/30">
+                    <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-white/30 dark:bg-[#1a1a1a]/30">
                       <div className="flex items-center justify-between">
                         <div>
                           <h2 className="text-xl font-bold">분석 결과</h2>
-                          <p className="text-dark-muted text-sm mt-1">
+                          <p className="text-gray-900 dark:text-gray-400 text-sm mt-1">
                             총 {results.length}개 키워드 분석 완료
                             {allResults.length > 0 && (
-                              <span className="ml-2 text-dark-muted">
+                              <span className="ml-2 text-gray-900 dark:text-gray-400">
                                 (이전 결과 {allResults.length}개 포함)
                               </span>
                             )}
@@ -719,7 +719,7 @@ function App() {
                           )}
                           <button
                             onClick={handleNewAnalysis}
-                            className="px-4 py-2 bg-dark-border hover:bg-dark-hover rounded-lg transition"
+                            className="px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-[#252525] rounded-lg transition"
                           >
                             새 분석
                           </button>
@@ -740,7 +740,7 @@ function App() {
                                 <h2 className="text-lg font-semibold">
                                   연관 키워드
                                   {batchRelatedKeywords && !batchRelatedLoading && (
-                                    <span className="ml-2 text-sm font-normal text-dark-muted">
+                                    <span className="ml-2 text-sm font-normal text-gray-900 dark:text-gray-400">
                                       ({batchRelatedKeywords.total_count}개)
                                     </span>
                                   )}
@@ -753,8 +753,8 @@ function App() {
                                     onChange={(e) => handleBatchRelatedToggle(e.target.checked)}
                                     className="sr-only peer"
                                   />
-                                  <div className="w-9 h-5 bg-dark-border rounded-full peer peer-checked:bg-naver-green peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"></div>
-                                  <span className="ml-2 text-sm text-dark-muted">
+                                  <div className="w-9 h-5 bg-gray-200 dark:bg-gray-700 rounded-full peer peer-checked:bg-naver-green peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"></div>
+                                  <span className="ml-2 text-sm text-gray-900 dark:text-gray-400">
                                     {batchRelatedEnabled ? 'ON' : 'OFF'}
                                   </span>
                                 </label>
@@ -762,7 +762,7 @@ function App() {
                               {batchRelatedKeywords && !batchRelatedLoading && batchRelatedEnabled && (
                                 <button
                                   onClick={() => fetchBatchRelatedKeywords(results.map(r => r.keyword))}
-                                  className="text-sm text-dark-muted hover:text-dark-text transition"
+                                  className="text-sm text-gray-900 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition"
                                 >
                                   새로고침
                                 </button>
@@ -774,7 +774,7 @@ function App() {
                                 {batchRelatedLoading && (
                                   <div className="flex items-center justify-center py-8">
                                     <div className="w-8 h-8 border-3 border-naver-green border-t-transparent rounded-full animate-spin"></div>
-                                    <span className="ml-3 text-dark-muted text-sm">연관 키워드 조회 중...</span>
+                                    <span className="ml-3 text-gray-900 dark:text-gray-400 text-sm">연관 키워드 조회 중...</span>
                                   </div>
                                 )}
 
@@ -788,12 +788,12 @@ function App() {
                                   <div className="overflow-x-auto">
                                     <table className="w-full text-sm">
                                       <thead>
-                                        <tr className="border-b border-dark-border">
-                                          <th className="px-4 py-2 text-left text-dark-muted w-12">#</th>
-                                          <th className="px-4 py-2 text-left text-dark-muted">키워드</th>
-                                          <th className="px-4 py-2 text-right text-dark-muted">PC 검색량</th>
-                                          <th className="px-4 py-2 text-right text-dark-muted">모바일 검색량</th>
-                                          <th className="px-4 py-2 text-right text-dark-muted">월 검색량</th>
+                                        <tr className="border-b border-gray-200 dark:border-gray-700">
+                                          <th className="px-4 py-2 text-left text-gray-900 dark:text-gray-400 w-12">#</th>
+                                          <th className="px-4 py-2 text-left text-gray-900 dark:text-gray-400">키워드</th>
+                                          <th className="px-4 py-2 text-right text-gray-900 dark:text-gray-400">PC 검색량</th>
+                                          <th className="px-4 py-2 text-right text-gray-900 dark:text-gray-400">모바일 검색량</th>
+                                          <th className="px-4 py-2 text-right text-gray-900 dark:text-gray-400">월 검색량</th>
                                         </tr>
                                       </thead>
                                       <tbody>
@@ -806,13 +806,13 @@ function App() {
                                           return (
                                             <tr
                                               key={idx}
-                                              className={`border-b border-dark-border/30 hover:bg-dark-hover ${
+                                              className={`border-b border-gray-200/30 dark:border-gray-700/30 hover:bg-gray-100 dark:hover:bg-[#252525] ${
                                                 isAnalyzed ? 'bg-naver-green/10' : isTop ? 'bg-yellow-500/5' : ''
                                               }`}
                                             >
-                                              <td className="px-4 py-2.5 text-dark-muted">{idx + 1}</td>
+                                              <td className="px-4 py-2.5 text-gray-900 dark:text-gray-400">{idx + 1}</td>
                                               <td className="px-4 py-2.5">
-                                                <span className={`${isAnalyzed ? 'text-naver-green font-bold' : isTop ? 'text-yellow-400 font-medium' : 'text-dark-text'}`}>
+                                                <span className={`${isAnalyzed ? 'text-naver-green font-bold' : isTop ? 'text-amber-600 dark:text-yellow-400 font-medium' : 'text-gray-900 dark:text-gray-100'}`}>
                                                   {item.keyword}
                                                 </span>
                                                 {isAnalyzed && (
@@ -828,7 +828,7 @@ function App() {
                                                 {item.mobile_search?.toLocaleString() ?? '-'}
                                               </td>
                                               <td className={`px-4 py-2.5 text-right font-mono font-medium ${
-                                                isTop ? 'text-yellow-400' : 'text-naver-green'
+                                                isTop ? 'text-amber-600 dark:text-yellow-400' : 'text-naver-green'
                                               }`}>
                                                 {item.total_search?.toLocaleString() ?? '-'}
                                               </td>
@@ -841,7 +841,7 @@ function App() {
                                 )}
 
                                 {!batchRelatedKeywords && !batchRelatedLoading && !batchRelatedError && (
-                                  <p className="text-dark-muted text-sm text-center py-4">
+                                  <p className="text-gray-900 dark:text-gray-400 text-sm text-center py-4">
                                     분석 완료 후 연관 키워드가 표시됩니다.
                                   </p>
                                 )}
@@ -854,14 +854,14 @@ function App() {
 
                     {/* 상세보기 (선택된 키워드) */}
                     {selectedKeyword && currentResult && !currentResult.error && (
-                      <div className="border-t border-dark-border bg-dark-card/50">
-                        <div className="px-6 py-3 flex items-center justify-between border-b border-dark-border">
+                      <div className="border-t border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-[#1a1a1a]/50">
+                        <div className="px-6 py-3 flex items-center justify-between border-b border-gray-200 dark:border-gray-700">
                           <h3 className="font-medium">
                             <span className="text-naver-green">"{selectedKeyword}"</span> 상세 정보
                           </h3>
                           <button
                             onClick={() => setSelectedKeyword('')}
-                            className="text-dark-muted hover:text-dark-text transition"
+                            className="text-gray-900 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition"
                           >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -870,7 +870,7 @@ function App() {
                         </div>
                         <div className="max-h-64 overflow-y-auto">
                           <div className="p-4">
-                            <h4 className="text-sm font-medium text-dark-muted mb-2">상위노출 순서</h4>
+                            <h4 className="text-sm font-medium text-gray-900 dark:text-gray-400 mb-2">상위노출 순서</h4>
                             <div className="grid grid-cols-5 gap-2">
                               {currentResult.top_results?.slice(0, 10).map((item) => (
                                 <a
@@ -878,10 +878,10 @@ function App() {
                                   href={item.url}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="p-2 rounded bg-dark-bg hover:bg-dark-border transition text-xs"
+                                  className="p-2 rounded bg-gray-50 dark:bg-[#0f0f0f] hover:bg-gray-200 dark:hover:bg-gray-700 transition text-xs"
                                 >
                                   <div className="font-medium text-naver-green">{item.rank}위</div>
-                                  <div className="text-dark-muted truncate">{item.title || '(제목 없음)'}</div>
+                                  <div className="text-gray-900 dark:text-gray-400 truncate">{item.title || '(제목 없음)'}</div>
                                 </a>
                               ))}
                             </div>

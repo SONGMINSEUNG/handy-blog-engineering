@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { diagnosePost, analyzeTopContents, PostDiagnoseResult, ImageAnalyzeResult, ImageItem, FoundKeyword, MorphemeFreq, TopicMatch, HTagItem, ExternalLinkItem, TopContentAnalysisResult, TopContentItem, TopContentRecommendation } from '../services/api';
+import { diagnosePost, analyzeTopContents, PostDiagnoseResult, ImageAnalyzeResult, ImageItem, FoundKeyword, MorphemeFreq, HTagItem, ExternalLinkItem, TopContentAnalysisResult, TopContentItem, TopContentRecommendation } from '../services/api';
 
 interface PostDiagnoseProps {
   initialUrl?: string;
@@ -161,7 +161,7 @@ export default function PostDiagnose({ initialUrl, onUrlConsumed }: PostDiagnose
       {/* 입력 */}
       <div className="glass-card p-6 mb-6">
         <div className="mb-4">
-          <label className="block text-sm font-medium text-dark-muted mb-2">
+          <label className="block text-sm font-medium text-gray-900 dark:text-gray-400 mb-2">
             타겟 키워드 (선택)
           </label>
           <input
@@ -169,7 +169,7 @@ export default function PostDiagnose({ initialUrl, onUrlConsumed }: PostDiagnose
             value={targetKeyword}
             onChange={(e) => setTargetKeyword(e.target.value)}
             placeholder="SEO 분석 대상 키워드를 입력하세요..."
-            className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-lg text-dark-text placeholder-dark-muted focus:outline-none focus:border-naver-green"
+            className="w-full px-4 py-3 bg-gray-50 dark:bg-[#0f0f0f] border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-naver-green"
           />
         </div>
         <div className="flex gap-4">
@@ -179,7 +179,7 @@ export default function PostDiagnose({ initialUrl, onUrlConsumed }: PostDiagnose
             onChange={(e) => setUrl(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="포스트 URL 입력... (예: https://blog.naver.com/blogid/123456789)"
-            className="flex-1 px-4 py-3 bg-dark-bg border border-dark-border rounded-lg text-dark-text placeholder-dark-muted focus:outline-none focus:border-naver-green"
+            className="flex-1 px-4 py-3 bg-gray-50 dark:bg-[#0f0f0f] border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-naver-green"
           />
           <button
             onClick={handleDiagnose}
@@ -198,7 +198,7 @@ export default function PostDiagnose({ initialUrl, onUrlConsumed }: PostDiagnose
       )}
 
       {loading && (
-        <div className="flex items-center justify-center py-12">
+        <div className="flex items-center justify-center" style={{minHeight: 'calc(100vh - 300px)'}}>
           <div className="w-12 h-12 border-4 border-naver-green border-t-transparent rounded-full animate-spin"></div>
         </div>
       )}
@@ -219,13 +219,13 @@ export default function PostDiagnose({ initialUrl, onUrlConsumed }: PostDiagnose
                     <div className="text-center">
                       <div className={`text-3xl font-bold ${
                         result.seo_score >= 80 ? 'text-green-400' :
-                        result.seo_score >= 60 ? 'text-yellow-400' :
+                        result.seo_score >= 60 ? 'text-amber-600 dark:text-yellow-400' :
                         result.seo_score >= 40 ? 'text-orange-400' :
                         'text-red-400'
                       }`}>
                         {result.seo_score}
                       </div>
-                      <div className="text-xs text-dark-muted">/ 100</div>
+                      <div className="text-xs text-gray-900 dark:text-gray-400">/ 100</div>
                     </div>
                   </div>
                 </div>
@@ -238,7 +238,7 @@ export default function PostDiagnose({ initialUrl, onUrlConsumed }: PostDiagnose
                       </span>
                     )}
                   </div>
-                  <p className="text-sm text-dark-muted">
+                  <p className="text-sm text-gray-900 dark:text-gray-400">
                     {result.seo_score_is_relative
                       ? (result.seo_score >= 80 ? '상위노출 글 대비 매우 좋은 SEO 상태입니다.' :
                          result.seo_score >= 60 ? '상위노출 글 대비 보통 수준입니다. 개선 여지가 있습니다.' :
@@ -250,7 +250,7 @@ export default function PostDiagnose({ initialUrl, onUrlConsumed }: PostDiagnose
                          'SEO 최적화가 매우 부족합니다. 개선이 시급합니다.')
                     }
                   </p>
-                  <div className="mt-2 w-full h-3 bg-dark-bg rounded-full overflow-hidden">
+                  <div className="mt-2 w-full h-3 bg-gray-50 dark:bg-[#0f0f0f] rounded-full overflow-hidden">
                     <div
                       className={`h-full rounded-full transition-all duration-500 ${
                         result.seo_score >= 80 ? 'bg-green-500' :
@@ -266,14 +266,14 @@ export default function PostDiagnose({ initialUrl, onUrlConsumed }: PostDiagnose
 
               {/* 상대적 점수 항목별 상세 */}
               {result.seo_score_is_relative && result.seo_score_details && (
-                <div className="mt-4 pt-4 border-t border-dark-border">
-                  <h3 className="text-sm font-medium text-dark-muted mb-3">항목별 점수 (상위 5개 글 평균 대비)</h3>
+                <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <h3 className="text-sm font-medium text-gray-900 dark:text-gray-400 mb-3">항목별 점수 (상위 5개 글 평균 대비)</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {Object.entries(result.seo_score_details).map(([key, detail]) => (
-                      <div key={key} className="flex items-center justify-between bg-dark-bg/50 rounded-lg px-3 py-2">
+                      <div key={key} className="flex items-center justify-between bg-gray-50/50 dark:bg-[#0f0f0f]/50 rounded-lg px-3 py-2">
                         <div className="flex-1">
                           <div className="text-sm font-medium">{detail.label}</div>
-                          <div className="text-xs text-dark-muted">
+                          <div className="text-xs text-gray-900 dark:text-gray-400">
                             {detail.has_keyword !== undefined
                               ? (detail.has_keyword ? '포함됨' : '미포함')
                               : `내 ${detail.my_value} / 평균 ${detail.avg_value}`
@@ -282,7 +282,7 @@ export default function PostDiagnose({ initialUrl, onUrlConsumed }: PostDiagnose
                         </div>
                         <div className={`text-sm font-bold ${
                           detail.score >= detail.max * 0.8 ? 'text-green-400' :
-                          detail.score >= detail.max * 0.5 ? 'text-yellow-400' :
+                          detail.score >= detail.max * 0.5 ? 'text-amber-600 dark:text-yellow-400' :
                           'text-red-400'
                         }`}>
                           {detail.score}/{detail.max}
@@ -301,19 +301,19 @@ export default function PostDiagnose({ initialUrl, onUrlConsumed }: PostDiagnose
 
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div>
-                <div className="text-dark-muted text-sm">제목</div>
+                <div className="text-gray-900 dark:text-gray-400 text-sm">제목</div>
                 <div className="font-medium">{result.title || '-'}</div>
               </div>
               <div>
-                <div className="text-dark-muted text-sm">작성자</div>
+                <div className="text-gray-900 dark:text-gray-400 text-sm">작성자</div>
                 <div className="font-medium">{result.author || '-'}</div>
               </div>
               <div>
-                <div className="text-dark-muted text-sm">작성일</div>
+                <div className="text-gray-900 dark:text-gray-400 text-sm">작성일</div>
                 <div className="font-medium">{result.date || '-'}</div>
               </div>
               <div>
-                <div className="text-dark-muted text-sm">URL</div>
+                <div className="text-gray-900 dark:text-gray-400 text-sm">URL</div>
                 <a
                   href={result.url}
                   target="_blank"
@@ -326,41 +326,41 @@ export default function PostDiagnose({ initialUrl, onUrlConsumed }: PostDiagnose
             </div>
 
             {/* 글자수 표시 (네이버 방식) */}
-            <div className="mb-4 p-3 bg-dark-bg rounded-lg">
+            <div className="mb-4 p-3 bg-gray-50 dark:bg-[#0f0f0f] rounded-lg">
               <div className="flex items-center justify-center gap-6">
                 <div className="text-center">
                   <div className="text-xl font-bold text-naver-green">
                     {(result.char_stats?.total ?? result.content_length_pure ?? 0).toLocaleString()}
                   </div>
-                  <div className="text-xs text-dark-muted">전체</div>
+                  <div className="text-xs text-gray-900 dark:text-gray-400">전체</div>
                 </div>
-                <div className="text-dark-muted/30">|</div>
+                <div className="text-gray-900 dark:text-gray-400/30">|</div>
                 <div className="text-center">
                   <div className="text-xl font-bold text-blue-400">
                     {(result.char_stats?.korean ?? 0).toLocaleString()}
                   </div>
-                  <div className="text-xs text-dark-muted">한글</div>
+                  <div className="text-xs text-gray-900 dark:text-gray-400">한글</div>
                 </div>
-                <div className="text-dark-muted/30">|</div>
+                <div className="text-gray-900 dark:text-gray-400/30">|</div>
                 <div className="text-center">
                   <div className="text-xl font-bold text-cyan-400">
                     {(result.char_stats?.english ?? 0).toLocaleString()}
                   </div>
-                  <div className="text-xs text-dark-muted">영어</div>
+                  <div className="text-xs text-gray-900 dark:text-gray-400">영어</div>
                 </div>
-                <div className="text-dark-muted/30">|</div>
+                <div className="text-gray-900 dark:text-gray-400/30">|</div>
                 <div className="text-center">
-                  <div className="text-xl font-bold text-yellow-400">
+                  <div className="text-xl font-bold text-amber-600 dark:text-yellow-400">
                     {(result.char_stats?.digit ?? 0).toLocaleString()}
                   </div>
-                  <div className="text-xs text-dark-muted">숫자</div>
+                  <div className="text-xs text-gray-900 dark:text-gray-400">숫자</div>
                 </div>
               </div>
             </div>
 
             {/* 통계 */}
             <div className="grid grid-cols-5 gap-4">
-              <div className="p-3 bg-dark-bg rounded-lg text-center">
+              <div className="p-3 bg-gray-50 dark:bg-[#0f0f0f] rounded-lg text-center">
                 <div className="text-2xl font-bold text-blue-400">
                   {imageData
                     ? `${imageData.valid_count} / ${imageData.total_count}`
@@ -368,27 +368,27 @@ export default function PostDiagnose({ initialUrl, onUrlConsumed }: PostDiagnose
                       ? `${result.valid_image_count} / ${result.total_image_count}`
                       : `${result.image_count || 0}`}
                 </div>
-                <div className="text-xs text-dark-muted">유효 이미지</div>
+                <div className="text-xs text-gray-900 dark:text-gray-400">유효 이미지</div>
               </div>
-              <div className="p-3 bg-dark-bg rounded-lg text-center">
+              <div className="p-3 bg-gray-50 dark:bg-[#0f0f0f] rounded-lg text-center">
                 <div className="text-2xl font-bold">{result.video_count || 0}</div>
-                <div className="text-xs text-dark-muted">동영상</div>
+                <div className="text-xs text-gray-900 dark:text-gray-400">동영상</div>
               </div>
-              <div className="p-3 bg-dark-bg rounded-lg text-center">
+              <div className="p-3 bg-gray-50 dark:bg-[#0f0f0f] rounded-lg text-center">
                 <div className="text-2xl font-bold text-cyan-400">{result.link_count || 0}</div>
-                <div className="text-xs text-dark-muted">외부링크</div>
+                <div className="text-xs text-gray-900 dark:text-gray-400">외부링크</div>
               </div>
-              <div className="p-3 bg-dark-bg rounded-lg text-center">
+              <div className="p-3 bg-gray-50 dark:bg-[#0f0f0f] rounded-lg text-center">
                 <div className="text-2xl font-bold text-red-400">
                   {[...new Set(result.forbidden_words?.map(kw => kw.word) || [])].length}
                 </div>
-                <div className="text-xs text-dark-muted">금지어</div>
+                <div className="text-xs text-gray-900 dark:text-gray-400">금지어</div>
               </div>
-              <div className="p-3 bg-dark-bg rounded-lg text-center">
+              <div className="p-3 bg-gray-50 dark:bg-[#0f0f0f] rounded-lg text-center">
                 <div className="text-2xl font-bold text-purple-400">
                   {[...new Set(result.commercial_words?.map(kw => kw.word) || [])].length}
                 </div>
-                <div className="text-xs text-dark-muted">상업성</div>
+                <div className="text-xs text-gray-900 dark:text-gray-400">상업성</div>
               </div>
             </div>
           </div>
@@ -399,13 +399,13 @@ export default function PostDiagnose({ initialUrl, onUrlConsumed }: PostDiagnose
               <h2 className="text-lg font-semibold mb-4">키워드 분석{targetKeyword ? `: "${targetKeyword}"` : ''}</h2>
               <div className="grid grid-cols-2 gap-6">
                 <div>
-                  <div className="text-sm text-dark-muted mb-2">키워드 밀도 <span className="text-xs text-yellow-400">(제목 제외)</span></div>
+                  <div className="text-sm text-gray-900 dark:text-gray-400 mb-2">키워드 밀도 <span className="text-xs text-amber-600 dark:text-yellow-400">(제목 제외)</span></div>
                   <div className="flex items-center gap-4">
                     <div className="text-3xl font-bold text-naver-green">
                       {result.keyword_density?.toFixed(2) || 0}%
                     </div>
                     <div className="flex-1">
-                      <div className="h-3 bg-dark-bg rounded-full overflow-hidden">
+                      <div className="h-3 bg-gray-50 dark:bg-[#0f0f0f] rounded-full overflow-hidden">
                         <div
                           className="h-full naver-gradient rounded-full"
                           style={{
@@ -415,16 +415,16 @@ export default function PostDiagnose({ initialUrl, onUrlConsumed }: PostDiagnose
                       </div>
                     </div>
                   </div>
-                  <div className="text-xs text-dark-muted mt-1">
+                  <div className="text-xs text-gray-900 dark:text-gray-400 mt-1">
                     권장 범위: 1% ~ 3%
                   </div>
                 </div>
                 <div>
-                  <div className="text-sm text-dark-muted mb-2">키워드 반복 횟수 <span className="text-xs text-yellow-400">(제목 제외)</span></div>
+                  <div className="text-sm text-gray-900 dark:text-gray-400 mb-2">키워드 반복 횟수 <span className="text-xs text-amber-600 dark:text-yellow-400">(제목 제외)</span></div>
                   <div className="text-3xl font-bold text-cyan-400">
                     {result.keyword_count || 0}회
                   </div>
-                  <div className="text-xs text-dark-muted mt-1">
+                  <div className="text-xs text-gray-900 dark:text-gray-400 mt-1">
                     본문 내 타겟 키워드 출현 횟수
                   </div>
                 </div>
@@ -437,13 +437,13 @@ export default function PostDiagnose({ initialUrl, onUrlConsumed }: PostDiagnose
             <div className="glass-card p-6">
               <h2 className="text-lg font-semibold mb-4">
                 상위노출 콘텐츠 분석
-                {targetKeyword && <span className="text-sm font-normal text-dark-muted ml-2">"{targetKeyword}"</span>}
+                {targetKeyword && <span className="text-sm font-normal text-gray-900 dark:text-gray-400 ml-2">"{targetKeyword}"</span>}
               </h2>
 
               {topContentLoading && (
                 <div className="flex items-center justify-center py-8">
                   <div className="w-8 h-8 border-3 border-naver-green border-t-transparent rounded-full animate-spin mr-3"></div>
-                  <span className="text-dark-muted">상위노출 콘텐츠 분석 중...</span>
+                  <span className="text-gray-900 dark:text-gray-400">상위노출 콘텐츠 분석 중...</span>
                 </div>
               )}
 
@@ -481,7 +481,7 @@ export default function PostDiagnose({ initialUrl, onUrlConsumed }: PostDiagnose
                             <span className={`text-sm font-medium ${
                               rec.severity === 'good' ? 'text-green-400' :
                               rec.severity === 'danger' ? 'text-red-400' :
-                              rec.severity === 'warning' ? 'text-yellow-400' :
+                              rec.severity === 'warning' ? 'text-amber-600 dark:text-yellow-400' :
                               'text-blue-400'
                             }`}>
                               {rec.type === 'keyword' ? '키워드' : '사진'}
@@ -490,70 +490,77 @@ export default function PostDiagnose({ initialUrl, onUrlConsumed }: PostDiagnose
                           <div className={`text-lg font-bold mb-1 ${
                             rec.severity === 'good' ? 'text-green-300' :
                             rec.severity === 'danger' ? 'text-red-300' :
-                            rec.severity === 'warning' ? 'text-yellow-300' :
+                            rec.severity === 'warning' ? 'text-amber-700 dark:text-yellow-300' :
                             'text-blue-300'
                           }`}>
                             {rec.message}
                           </div>
-                          <div className="text-xs text-dark-muted">{rec.detail}</div>
+                          <div className="text-xs text-gray-900 dark:text-gray-400">{rec.detail}</div>
                         </div>
                       ))}
                     </div>
                   )}
 
                   {/* 내 포스팅 vs 상위 평균 비교 바 */}
-                  <div className="p-4 bg-dark-bg rounded-lg">
-                    <h3 className="text-sm font-medium text-dark-muted mb-3">내 포스팅 vs 상위 평균</h3>
+                  <div className="p-4 bg-gray-50 dark:bg-[#0f0f0f] rounded-lg">
+                    <h3 className="text-sm font-medium text-gray-900 dark:text-gray-400 mb-3">내 포스팅 vs 상위 평균</h3>
                     <div className="grid grid-cols-3 gap-4 text-center">
                       <div>
-                        <div className="text-xs text-dark-muted mb-1">키워드 횟수</div>
+                        <div className="text-xs text-gray-900 dark:text-gray-400 mb-1">키워드 횟수</div>
                         <div className="flex items-center justify-center gap-2">
                           <span className="text-lg font-bold text-cyan-400">{topContentResult.my_stats.keyword_count}</span>
-                          <span className="text-dark-muted">/</span>
+                          <span className="text-gray-900 dark:text-gray-400">/</span>
                           <span className="text-lg font-bold text-naver-green">{topContentResult.averages.keyword_count}</span>
                         </div>
-                        <div className="text-[10px] text-dark-muted">내 포스팅 / 상위 평균</div>
+                        <div className="text-[10px] text-gray-900 dark:text-gray-400">내 포스팅 / 상위 평균</div>
                       </div>
                       <div>
-                        <div className="text-xs text-dark-muted mb-1">사진 수</div>
+                        <div className="text-xs text-gray-900 dark:text-gray-400 mb-1">사진 수</div>
                         <div className="flex items-center justify-center gap-2">
                           <span className="text-lg font-bold text-cyan-400">{topContentResult.my_stats.image_count}</span>
-                          <span className="text-dark-muted">/</span>
+                          <span className="text-gray-900 dark:text-gray-400">/</span>
                           <span className="text-lg font-bold text-naver-green">{topContentResult.averages.image_count}</span>
                         </div>
-                        <div className="text-[10px] text-dark-muted">내 포스팅 / 상위 평균</div>
+                        <div className="text-[10px] text-gray-900 dark:text-gray-400">내 포스팅 / 상위 평균</div>
                       </div>
                       <div>
-                        <div className="text-xs text-dark-muted mb-1">글자 수</div>
+                        <div className="text-xs text-gray-900 dark:text-gray-400 mb-1">글자 수</div>
                         <div className="flex items-center justify-center gap-2">
                           <span className="text-lg font-bold text-cyan-400">{(result.content_length_pure || 0).toLocaleString()}</span>
-                          <span className="text-dark-muted">/</span>
+                          <span className="text-gray-900 dark:text-gray-400">/</span>
                           <span className="text-lg font-bold text-naver-green">{topContentResult.averages.content_length.toLocaleString()}</span>
                         </div>
-                        <div className="text-[10px] text-dark-muted">내 포스팅 / 상위 평균</div>
+                        <div className="text-[10px] text-gray-900 dark:text-gray-400">내 포스팅 / 상위 평균</div>
                       </div>
                     </div>
                   </div>
 
                   {/* 상위 콘텐츠 테이블 */}
-                  {topContentResult.top_contents.length > 0 && (
+                  {topContentResult.top_contents.length > 0 && (() => {
+                    const keywordWords = targetKeyword.trim().split(/\s+/).filter(w => w.length > 0);
+                    const hasSubWords = keywordWords.length >= 2;
+                    const avgCounts = topContentResult.averages.keyword_counts || {};
+                    return (
                     <div className="overflow-x-auto">
                       <table className="w-full text-sm">
                         <thead>
-                          <tr className="border-b border-dark-border">
-                            <th className="px-3 py-2 text-left text-dark-muted">순위</th>
-                            <th className="px-3 py-2 text-left text-dark-muted">제목</th>
-                            <th className="px-3 py-2 text-right text-dark-muted">키워드 횟수</th>
-                            <th className="px-3 py-2 text-right text-dark-muted">사진 수</th>
-                            <th className="px-3 py-2 text-right text-dark-muted">글자 수</th>
+                          <tr className="border-b border-gray-200 dark:border-gray-700">
+                            <th className="px-3 py-2 text-left text-gray-900 dark:text-gray-400">순위</th>
+                            <th className="px-3 py-2 text-left text-gray-900 dark:text-gray-400">제목</th>
+                            <th className="px-3 py-2 text-right text-gray-900 dark:text-gray-400">{targetKeyword.trim() || '키워드 횟수'}</th>
+                            {hasSubWords && keywordWords.map(w => (
+                              <th key={w} className="px-3 py-2 text-right text-gray-900 dark:text-gray-400">{w}</th>
+                            ))}
+                            <th className="px-3 py-2 text-right text-gray-900 dark:text-gray-400">사진 수</th>
+                            <th className="px-3 py-2 text-right text-gray-900 dark:text-gray-400">글자 수</th>
                           </tr>
                         </thead>
                         <tbody>
                           {topContentResult.top_contents.map((item: TopContentItem) => (
-                            <tr key={item.rank} className="border-b border-dark-border/50 hover:bg-dark-hover">
+                            <tr key={item.rank} className="border-b border-gray-200/50 dark:border-gray-700/50 hover:bg-gray-100 dark:hover:bg-[#252525]">
                               <td className="px-3 py-2">
                                 <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
-                                  item.rank <= 3 ? 'bg-naver-green/20 text-naver-green' : 'bg-dark-bg text-dark-muted'
+                                  item.rank <= 3 ? 'bg-naver-green/20 text-naver-green' : 'bg-gray-50 dark:bg-[#0f0f0f] text-gray-900 dark:text-gray-400'
                                 }`}>
                                   {item.rank}
                                 </span>
@@ -571,14 +578,20 @@ export default function PostDiagnose({ initialUrl, onUrlConsumed }: PostDiagnose
                               </td>
                               <td className="px-3 py-2 text-right">
                                 <span className="text-cyan-400 font-medium">{item.keyword_count}</span>
-                                <span className="text-dark-muted text-xs ml-1">회</span>
+                                <span className="text-gray-900 dark:text-gray-400 text-xs ml-1">회</span>
                               </td>
+                              {hasSubWords && keywordWords.map(w => (
+                                <td key={w} className="px-3 py-2 text-right">
+                                  <span className="text-purple-400 font-medium">{item.keyword_counts?.[w] ?? '-'}</span>
+                                  <span className="text-gray-900 dark:text-gray-400 text-xs ml-1">회</span>
+                                </td>
+                              ))}
                               <td className="px-3 py-2 text-right">
                                 <span className="text-blue-400 font-medium">{item.image_count}</span>
-                                <span className="text-dark-muted text-xs ml-1">장</span>
+                                <span className="text-gray-900 dark:text-gray-400 text-xs ml-1">장</span>
                               </td>
                               <td className="px-3 py-2 text-right">
-                                <span className="text-dark-muted">{item.content_length.toLocaleString()}</span>
+                                <span className="text-gray-900 dark:text-gray-400">{item.content_length.toLocaleString()}</span>
                               </td>
                             </tr>
                           ))}
@@ -588,11 +601,17 @@ export default function PostDiagnose({ initialUrl, onUrlConsumed }: PostDiagnose
                             <td className="px-3 py-2 font-medium text-naver-green">상위 평균</td>
                             <td className="px-3 py-2 text-right">
                               <span className="text-naver-green font-bold">{topContentResult.averages.keyword_count}</span>
-                              <span className="text-dark-muted text-xs ml-1">회</span>
+                              <span className="text-gray-900 dark:text-gray-400 text-xs ml-1">회</span>
                             </td>
+                            {hasSubWords && keywordWords.map(w => (
+                              <td key={w} className="px-3 py-2 text-right">
+                                <span className="text-naver-green font-bold">{avgCounts[w] ?? '-'}</span>
+                                <span className="text-gray-900 dark:text-gray-400 text-xs ml-1">회</span>
+                              </td>
+                            ))}
                             <td className="px-3 py-2 text-right">
                               <span className="text-naver-green font-bold">{topContentResult.averages.image_count}</span>
-                              <span className="text-dark-muted text-xs ml-1">장</span>
+                              <span className="text-gray-900 dark:text-gray-400 text-xs ml-1">장</span>
                             </td>
                             <td className="px-3 py-2 text-right">
                               <span className="text-naver-green font-bold">{topContentResult.averages.content_length.toLocaleString()}</span>
@@ -601,10 +620,11 @@ export default function PostDiagnose({ initialUrl, onUrlConsumed }: PostDiagnose
                         </tbody>
                       </table>
                     </div>
-                  )}
+                    );
+                  })()}
 
                   {topContentResult.top_contents.length === 0 && !topContentLoading && (
-                    <div className="text-center text-dark-muted py-4 text-sm">
+                    <div className="text-center text-gray-900 dark:text-gray-400 py-4 text-sm">
                       상위노출 블로그 콘텐츠를 찾지 못했습니다.
                     </div>
                   )}
@@ -612,7 +632,7 @@ export default function PostDiagnose({ initialUrl, onUrlConsumed }: PostDiagnose
               )}
 
               {!topContentResult && !topContentLoading && !topContentError && (
-                <div className="text-center text-dark-muted py-4 text-sm">
+                <div className="text-center text-gray-900 dark:text-gray-400 py-4 text-sm">
                   포스팅 진단 후 자동으로 상위노출 분석이 시작됩니다.
                 </div>
               )}
@@ -627,7 +647,7 @@ export default function PostDiagnose({ initialUrl, onUrlConsumed }: PostDiagnose
                 {result.h_tags.map((htag: HTagItem, idx: number) => (
                   <div
                     key={idx}
-                    className="flex items-center gap-3 p-2 bg-dark-bg rounded-lg"
+                    className="flex items-center gap-3 p-2 bg-gray-50 dark:bg-[#0f0f0f] rounded-lg"
                     style={{ paddingLeft: `${(htag.level - 1) * 20 + 8}px` }}
                   >
                     <span className={`px-2 py-0.5 rounded text-xs font-bold ${
@@ -662,7 +682,7 @@ export default function PostDiagnose({ initialUrl, onUrlConsumed }: PostDiagnose
                         rel="noopener noreferrer"
                         className="block rounded-lg overflow-hidden border border-green-500/30 hover:border-green-500 transition"
                       >
-                        <div className="h-[100px] bg-dark-bg">
+                        <div className="h-[100px] bg-gray-50 dark:bg-[#0f0f0f]">
                           <img
                             src={normalizeImageUrl(img.thumbnail_url || img.url)}
                             alt={img.alt || `유효 이미지 ${idx + 1}`}
@@ -680,7 +700,7 @@ export default function PostDiagnose({ initialUrl, onUrlConsumed }: PostDiagnose
                               const parent = target.parentElement;
                               if (parent && !parent.querySelector('.img-fallback')) {
                                 const fallback = document.createElement('div');
-                                fallback.className = 'img-fallback w-full h-full flex items-center justify-center text-dark-muted text-xs text-center p-1';
+                                fallback.className = 'img-fallback w-full h-full flex items-center justify-center text-gray-900 dark:text-gray-400 text-xs text-center p-1';
                                 fallback.textContent = `#${img.order}`;
                                 parent.appendChild(fallback);
                               }
@@ -708,7 +728,7 @@ export default function PostDiagnose({ initialUrl, onUrlConsumed }: PostDiagnose
                         rel="noopener noreferrer"
                         className="block rounded-lg overflow-hidden border border-red-500/30 hover:border-red-500 transition relative group"
                       >
-                        <div className="h-[100px] bg-dark-bg">
+                        <div className="h-[100px] bg-gray-50 dark:bg-[#0f0f0f]">
                           <img
                             src={normalizeImageUrl(img.thumbnail_url || img.url)}
                             alt={img.alt || `무효 이미지 ${idx + 1}`}
@@ -726,7 +746,7 @@ export default function PostDiagnose({ initialUrl, onUrlConsumed }: PostDiagnose
                               const parent = target.parentElement;
                               if (parent && !parent.querySelector('.img-fallback')) {
                                 const fallback = document.createElement('div');
-                                fallback.className = 'img-fallback w-full h-full flex items-center justify-center text-dark-muted text-xs text-center p-1';
+                                fallback.className = 'img-fallback w-full h-full flex items-center justify-center text-gray-900 dark:text-gray-400 text-xs text-center p-1';
                                 fallback.textContent = `#${img.order}`;
                                 parent.appendChild(fallback);
                               }
@@ -765,9 +785,9 @@ export default function PostDiagnose({ initialUrl, onUrlConsumed }: PostDiagnose
                       href={imgUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="block rounded-lg overflow-hidden border border-dark-border hover:border-naver-green transition"
+                      className="block rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 hover:border-naver-green transition"
                     >
-                      <div className="h-[100px] bg-dark-bg">
+                      <div className="h-[100px] bg-gray-50 dark:bg-[#0f0f0f]">
                         <img
                           src={imgUrl}
                           alt={`이미지 ${idx + 1}`}
@@ -780,7 +800,7 @@ export default function PostDiagnose({ initialUrl, onUrlConsumed }: PostDiagnose
                             const parent = target.parentElement;
                             if (parent && !parent.querySelector('.img-fallback')) {
                               const fallback = document.createElement('div');
-                              fallback.className = 'img-fallback w-full h-full flex items-center justify-center text-dark-muted text-xs text-center p-1';
+                              fallback.className = 'img-fallback w-full h-full flex items-center justify-center text-gray-900 dark:text-gray-400 text-xs text-center p-1';
                               fallback.textContent = `#${idx + 1}`;
                               parent.appendChild(fallback);
                             }
@@ -801,7 +821,7 @@ export default function PostDiagnose({ initialUrl, onUrlConsumed }: PostDiagnose
               </h2>
               <div className="space-y-2 max-h-64 overflow-y-auto">
                 {result.external_links.map((link: ExternalLinkItem, idx: number) => (
-                  <div key={idx} className="flex items-center gap-3 p-2 bg-dark-bg rounded-lg text-sm">
+                  <div key={idx} className="flex items-center gap-3 p-2 bg-gray-50 dark:bg-[#0f0f0f] rounded-lg text-sm">
                     <span className="px-2 py-0.5 bg-orange-500/20 text-orange-300 rounded text-xs flex-shrink-0">
                       {link.domain}
                     </span>
@@ -878,7 +898,7 @@ export default function PostDiagnose({ initialUrl, onUrlConsumed }: PostDiagnose
               </div>
             </div>
             <div
-              className="p-4 bg-dark-bg rounded-lg max-h-96 overflow-y-auto whitespace-pre-wrap text-sm leading-relaxed"
+              className="p-4 bg-gray-50 dark:bg-[#0f0f0f] rounded-lg max-h-96 overflow-y-auto whitespace-pre-wrap text-sm leading-relaxed"
               dangerouslySetInnerHTML={{ __html: highlightedContent }}
             />
           </div>
@@ -888,29 +908,29 @@ export default function PostDiagnose({ initialUrl, onUrlConsumed }: PostDiagnose
             <div className="glass-card p-6">
               <h2 className="text-lg font-semibold mb-4">문장 통계</h2>
               <div className="grid grid-cols-4 gap-4">
-                <div className="p-4 bg-dark-bg rounded-lg text-center">
+                <div className="p-4 bg-gray-50 dark:bg-[#0f0f0f] rounded-lg text-center">
                   <div className="text-xl font-bold">
                     {result.word_stats.word_count?.toLocaleString() || 0}
                   </div>
-                  <div className="text-sm text-dark-muted">단어 수</div>
+                  <div className="text-sm text-gray-900 dark:text-gray-400">단어 수</div>
                 </div>
-                <div className="p-4 bg-dark-bg rounded-lg text-center">
+                <div className="p-4 bg-gray-50 dark:bg-[#0f0f0f] rounded-lg text-center">
                   <div className="text-xl font-bold">
                     {result.word_stats.sentence_count || 0}
                   </div>
-                  <div className="text-sm text-dark-muted">문장 수</div>
+                  <div className="text-sm text-gray-900 dark:text-gray-400">문장 수</div>
                 </div>
-                <div className="p-4 bg-dark-bg rounded-lg text-center">
+                <div className="p-4 bg-gray-50 dark:bg-[#0f0f0f] rounded-lg text-center">
                   <div className="text-xl font-bold">
                     {result.word_stats.paragraph_count || 0}
                   </div>
-                  <div className="text-sm text-dark-muted">문단 수</div>
+                  <div className="text-sm text-gray-900 dark:text-gray-400">문단 수</div>
                 </div>
-                <div className="p-4 bg-dark-bg rounded-lg text-center">
+                <div className="p-4 bg-gray-50 dark:bg-[#0f0f0f] rounded-lg text-center">
                   <div className="text-xl font-bold">
                     {result.word_stats.avg_sentence_length?.toFixed(1) || 0}
                   </div>
-                  <div className="text-sm text-dark-muted">평균 문장 길이</div>
+                  <div className="text-sm text-gray-900 dark:text-gray-400">평균 문장 길이</div>
                 </div>
               </div>
             </div>
@@ -922,26 +942,26 @@ export default function PostDiagnose({ initialUrl, onUrlConsumed }: PostDiagnose
           {imageData && imageData.images.length > 0 && (
             <div className="glass-card p-6">
               <details>
-                <summary className="cursor-pointer text-sm text-dark-muted hover:text-dark-text transition">
+                <summary className="cursor-pointer text-sm text-gray-900 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition">
                   이미지 상세 목록 보기 ({imageData.images.length}개)
                 </summary>
                 <div className="mt-4 overflow-x-auto max-h-96 overflow-y-auto">
                   <table className="w-full text-sm">
-                    <thead className="sticky top-0 bg-dark-card">
-                      <tr className="border-b border-dark-border">
-                        <th className="px-3 py-2 text-left text-dark-muted">#</th>
-                        <th className="px-3 py-2 text-left text-dark-muted">상태</th>
-                        <th className="px-3 py-2 text-left text-dark-muted">크기</th>
-                        <th className="px-3 py-2 text-left text-dark-muted">URL</th>
-                        <th className="px-3 py-2 text-left text-dark-muted">사유</th>
+                    <thead className="sticky top-0 bg-white dark:bg-[#1a1a1a]">
+                      <tr className="border-b border-gray-200 dark:border-gray-700">
+                        <th className="px-3 py-2 text-left text-gray-900 dark:text-gray-400">#</th>
+                        <th className="px-3 py-2 text-left text-gray-900 dark:text-gray-400">상태</th>
+                        <th className="px-3 py-2 text-left text-gray-900 dark:text-gray-400">크기</th>
+                        <th className="px-3 py-2 text-left text-gray-900 dark:text-gray-400">URL</th>
+                        <th className="px-3 py-2 text-left text-gray-900 dark:text-gray-400">사유</th>
                       </tr>
                     </thead>
                     <tbody>
                       {imageData.images.map((img: ImageItem, idx: number) => {
                         const normalizedUrl = normalizeImageUrl(img.url);
                         return (
-                          <tr key={idx} className="border-b border-dark-border/50 hover:bg-dark-hover">
-                            <td className="px-3 py-2 text-dark-muted">{img.order}</td>
+                          <tr key={idx} className="border-b border-gray-200/50 dark:border-gray-700/50 hover:bg-gray-100 dark:hover:bg-[#252525]">
+                            <td className="px-3 py-2 text-gray-900 dark:text-gray-400">{img.order}</td>
                             <td className="px-3 py-2">
                               {img.is_valid ? (
                                 <span className="text-green-400">유효</span>
@@ -979,103 +999,60 @@ export default function PostDiagnose({ initialUrl, onUrlConsumed }: PostDiagnose
           {/* 형태소 분석 결과 */}
           {result.morpheme_analysis && Object.keys(result.morpheme_analysis).length > 0 && (
             <div className="glass-card p-6">
-              <h2 className="text-lg font-semibold mb-4">형태소 분석 (키워드 빈도) <span className="text-sm font-normal text-yellow-400">(제목 제외)</span></h2>
+              <h2 className="text-lg font-semibold mb-4">형태소 분석 (키워드 빈도) <span className="text-sm font-normal text-amber-600 dark:text-yellow-400">(제목 제외)</span></h2>
 
               {/* 요약 정보 */}
               {result.morpheme_analysis.summary && (
                 <div className="grid grid-cols-4 gap-4 mb-6">
-                  <div className="p-3 bg-dark-bg rounded-lg text-center">
+                  <div className="p-3 bg-gray-50 dark:bg-[#0f0f0f] rounded-lg text-center">
                     <div className="text-xl font-bold text-cyan-400">
                       {result.morpheme_analysis.summary.total_morphemes?.toLocaleString() || 0}
                     </div>
-                    <div className="text-xs text-dark-muted">총 형태소</div>
+                    <div className="text-xs text-gray-900 dark:text-gray-400">총 형태소</div>
                   </div>
-                  <div className="p-3 bg-dark-bg rounded-lg text-center">
+                  <div className="p-3 bg-gray-50 dark:bg-[#0f0f0f] rounded-lg text-center">
                     <div className="text-xl font-bold text-green-400">
                       {result.morpheme_analysis.summary.unique_nouns || 0}
                     </div>
-                    <div className="text-xs text-dark-muted">고유 명사</div>
+                    <div className="text-xs text-gray-900 dark:text-gray-400">고유 명사</div>
                   </div>
-                  <div className="p-3 bg-dark-bg rounded-lg text-center">
-                    <div className="text-xl font-bold text-yellow-400">
+                  <div className="p-3 bg-gray-50 dark:bg-[#0f0f0f] rounded-lg text-center">
+                    <div className="text-xl font-bold text-amber-600 dark:text-yellow-400">
                       {result.morpheme_analysis.summary.unique_verbs || 0}
                     </div>
-                    <div className="text-xs text-dark-muted">고유 동사</div>
-                  </div>
-                  <div className="p-3 bg-dark-bg rounded-lg text-center">
-                    <div className="text-sm font-medium text-orange-400">
-                      {result.morpheme_analysis.summary.top_topics?.join(', ') || '-'}
-                    </div>
-                    <div className="text-xs text-dark-muted">주요 주제</div>
+                    <div className="text-xs text-gray-900 dark:text-gray-400">고유 동사</div>
                   </div>
                 </div>
               )}
 
-              {/* 품사별 빈도 테이블 */}
+              {/* 키워드 빈도 테이블 */}
               <div className="grid grid-cols-2 gap-6">
-                {/* 명사 빈도 */}
-                <div>
-                  <h3 className="text-sm font-medium text-green-400 mb-3 flex items-center gap-2">
-                    <span className="w-3 h-3 bg-green-500 rounded-full"></span>
-                    명사 빈도 (상위 15개)
-                  </h3>
-                  <div className="bg-dark-bg rounded-lg overflow-hidden">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="border-b border-dark-border">
-                          <th className="px-3 py-2 text-left text-dark-muted">순위</th>
-                          <th className="px-3 py-2 text-left text-dark-muted">단어</th>
-                          <th className="px-3 py-2 text-right text-dark-muted">횟수</th>
-                          <th className="px-3 py-2 text-right text-dark-muted">비율</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {(result.morpheme_analysis.noun_freq || []).slice(0, 15).map((item: MorphemeFreq, idx: number) => (
-                          <tr key={idx} className="border-b border-dark-border/50 hover:bg-dark-card">
-                            <td className="px-3 py-2 text-dark-muted">{idx + 1}</td>
-                            <td className="px-3 py-2 font-medium">{item.word}</td>
-                            <td className="px-3 py-2 text-right text-green-400">{item.count}</td>
-                            <td className="px-3 py-2 text-right text-dark-muted">{item.ratio}%</td>
-                          </tr>
-                        ))}
-                        {(!result.morpheme_analysis.noun_freq || result.morpheme_analysis.noun_freq.length === 0) && (
-                          <tr>
-                            <td colSpan={4} className="px-3 py-4 text-center text-dark-muted">
-                              데이터 없음
-                            </td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-
                 {/* 핵심 키워드 빈도 (타겟 키워드 분석) */}
                 <div>
-                  <h3 className="text-sm font-medium text-yellow-400 mb-3 flex items-center gap-2">
+                  <h3 className="text-sm font-medium text-amber-600 dark:text-yellow-400 mb-3 flex items-center gap-2">
                     <span className="w-3 h-3 bg-yellow-500 rounded-full"></span>
                     핵심 키워드 빈도{targetKeyword ? ` - "${targetKeyword}"` : ''}
                   </h3>
-                  <div className="bg-dark-bg rounded-lg overflow-hidden">
+                  <div className="bg-gray-50 dark:bg-[#0f0f0f] rounded-lg overflow-hidden">
                     {result.keyword_breakdown && result.keyword_breakdown.length > 0 ? (
                       <table className="w-full text-sm">
                         <thead>
-                          <tr className="border-b border-dark-border">
-                            <th className="px-3 py-2 text-left text-dark-muted">키워드</th>
-                            <th className="px-3 py-2 text-right text-dark-muted">출현 횟수</th>
+                          <tr className="border-b border-gray-200 dark:border-gray-700">
+                            <th className="px-3 py-2 text-left text-gray-900 dark:text-gray-400">키워드</th>
+                            <th className="px-3 py-2 text-right text-gray-900 dark:text-gray-400">출현 횟수</th>
                           </tr>
                         </thead>
                         <tbody>
                           {result.keyword_breakdown.map((item: { word: string; count: number }, idx: number) => (
-                            <tr key={idx} className="border-b border-dark-border/50 hover:bg-dark-card">
+                            <tr key={idx} className="border-b border-gray-200/50 dark:border-gray-700/50 hover:bg-white dark:hover:bg-[#1a1a1a]">
                               <td className="px-3 py-2 font-medium">{item.word}</td>
-                              <td className="px-3 py-2 text-right text-yellow-400 font-bold">{item.count}회</td>
+                              <td className="px-3 py-2 text-right text-amber-600 dark:text-yellow-400 font-bold">{item.count}회</td>
                             </tr>
                           ))}
                         </tbody>
                       </table>
                     ) : (
-                      <div className="px-3 py-4 text-center text-dark-muted">
+                      <div className="px-3 py-4 text-center text-gray-900 dark:text-gray-400">
                         타겟 키워드를 입력하면 핵심 키워드 빈도가 표시됩니다.
                       </div>
                     )}
@@ -1093,7 +1070,7 @@ export default function PostDiagnose({ initialUrl, onUrlConsumed }: PostDiagnose
                   {(result.morpheme_analysis.all_freq || []).slice(0, 30).map((item: MorphemeFreq, idx: number) => (
                     <div
                       key={idx}
-                      className="px-3 py-1.5 bg-dark-bg rounded-full text-sm flex items-center gap-2"
+                      className="px-3 py-1.5 bg-gray-50 dark:bg-[#0f0f0f] rounded-full text-sm flex items-center gap-2"
                       style={{
                         opacity: Math.max(0.5, 1 - idx * 0.02)
                       }}
@@ -1105,32 +1082,6 @@ export default function PostDiagnose({ initialUrl, onUrlConsumed }: PostDiagnose
                 </div>
               </div>
 
-              {/* 주제 분류 */}
-              {result.morpheme_analysis.topics && result.morpheme_analysis.topics.length > 0 && (
-                <div className="mt-6">
-                  <h3 className="text-sm font-medium text-orange-400 mb-3 flex items-center gap-2">
-                    <span className="w-3 h-3 bg-orange-500 rounded-full"></span>
-                    주제 분류
-                  </h3>
-                  <div className="grid grid-cols-3 gap-4">
-                    {result.morpheme_analysis.topics.slice(0, 6).map((topic: TopicMatch, idx: number) => (
-                      <div key={idx} className="p-3 bg-dark-bg rounded-lg">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="font-medium text-orange-300">{topic.topic}</span>
-                          <span className="text-xs text-dark-muted">점수: {topic.score}</span>
-                        </div>
-                        <div className="flex flex-wrap gap-1">
-                          {topic.matched_keywords.map((kw: string, kwIdx: number) => (
-                            <span key={kwIdx} className="px-2 py-0.5 bg-orange-500/20 rounded text-xs text-orange-200">
-                              {kw}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
           )}
         </div>

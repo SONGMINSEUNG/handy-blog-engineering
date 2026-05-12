@@ -16,15 +16,15 @@ interface RankBidTableProps {
 
 // 스켈레톤 테이블 행
 const SkeletonRow = memo(() => (
-  <tr className="border-b border-dark-border/50">
+  <tr className="border-b border-gray-200/50 dark:border-gray-700/50">
     <td className="px-4 py-3">
-      <div className="h-4 bg-dark-border rounded w-8 animate-pulse"></div>
+      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-8 animate-pulse"></div>
     </td>
     <td className="px-4 py-3">
-      <div className="h-4 bg-dark-border rounded w-20 animate-pulse"></div>
+      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-20 animate-pulse"></div>
     </td>
     <td className="px-4 py-3">
-      <div className="h-4 bg-dark-border rounded w-20 animate-pulse"></div>
+      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-20 animate-pulse"></div>
     </td>
   </tr>
 ));
@@ -162,7 +162,7 @@ function RankBidTable({ data, loading, isApiConfigured, onScraperDataReceived }:
       <div className="glass-card p-6">
         <h2 className="text-lg font-semibold mb-4">순위별 입찰가</h2>
         <div className="text-center py-8">
-          <div className="text-dark-muted mb-2">
+          <div className="text-gray-900 dark:text-gray-400 mb-2">
             <svg className="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M12 12h.01M12 12h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
@@ -179,7 +179,7 @@ function RankBidTable({ data, loading, isApiConfigured, onScraperDataReceived }:
       <h2 className="text-lg font-semibold mb-4">
         순위별 입찰가
         {data?.rank_bids_estimated && (
-          <span className="ml-2 text-xs font-normal text-yellow-400 bg-yellow-400/10 px-2 py-0.5 rounded-full border border-yellow-400/30">
+          <span className="ml-2 text-xs font-normal text-amber-600 dark:text-yellow-400 bg-yellow-400/10 px-2 py-0.5 rounded-full border border-yellow-400/30">
             추정값
           </span>
         )}
@@ -192,9 +192,9 @@ function RankBidTable({ data, loading, isApiConfigured, onScraperDataReceived }:
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-dark-border">
-              <th className="px-4 py-2 text-left text-dark-muted">순위</th>
-              <th className="px-4 py-2 text-right text-dark-muted">
+            <tr className="border-b border-gray-200 dark:border-gray-700">
+              <th className="px-4 py-2 text-left text-gray-900 dark:text-gray-400">순위</th>
+              <th className="px-4 py-2 text-right text-gray-900 dark:text-gray-400">
                 <span className="flex items-center justify-end gap-2">
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path
@@ -207,7 +207,7 @@ function RankBidTable({ data, loading, isApiConfigured, onScraperDataReceived }:
                   PC 입찰가
                 </span>
               </th>
-              <th className="px-4 py-2 text-right text-dark-muted">
+              <th className="px-4 py-2 text-right text-gray-900 dark:text-gray-400">
                 <span className="flex items-center justify-end gap-2">
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path
@@ -238,7 +238,7 @@ function RankBidTable({ data, loading, isApiConfigured, onScraperDataReceived }:
                 return (
                   <tr
                     key={rank}
-                    className="border-b border-dark-border/50 hover:bg-dark-hover transition"
+                    className="border-b border-gray-200/50 dark:border-gray-700/50 hover:bg-gray-100 dark:hover:bg-[#252525] transition"
                   >
                     <td className="px-4 py-3 font-medium">
                       <span
@@ -249,25 +249,25 @@ function RankBidTable({ data, loading, isApiConfigured, onScraperDataReceived }:
                             ? 'bg-gray-400 text-black'
                             : rank === 3
                             ? 'bg-amber-600 text-white'
-                            : 'bg-dark-border text-white'
+                            : 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
                         }`}
                       >
                         {rank}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-right text-dark-text font-medium">
+                    <td className="px-4 py-3 text-right text-gray-900 dark:text-gray-100 font-medium">
                       {data?.rank_bids_estimated && pcBid != null ? (
                         <span>
                           {pcBid.toLocaleString()}원
-                          <span className="ml-1 text-xs text-yellow-400">(추정)</span>
+                          <span className="ml-1 text-xs text-amber-600 dark:text-yellow-400">(추정)</span>
                         </span>
                       ) : formatPrice(pcBid)}
                     </td>
-                    <td className="px-4 py-3 text-right text-dark-text font-medium">
+                    <td className="px-4 py-3 text-right text-gray-900 dark:text-gray-100 font-medium">
                       {data?.rank_bids_estimated && mobileBid != null ? (
                         <span>
                           {mobileBid.toLocaleString()}원
-                          <span className="ml-1 text-xs text-yellow-400">(추정)</span>
+                          <span className="ml-1 text-xs text-amber-600 dark:text-yellow-400">(추정)</span>
                         </span>
                       ) : formatPrice(mobileBid)}
                     </td>
@@ -312,11 +312,11 @@ function RankBidTable({ data, loading, isApiConfigured, onScraperDataReceived }:
       )}
 
       {/* 참고 메시지 */}
-      <p className="text-dark-muted text-xs mt-4">
+      <p className="text-gray-900 dark:text-gray-400 text-xs mt-4">
         * 입찰가는 실시간으로 변동될 수 있으며, 참고용으로만 활용해 주세요.
         {data?.rank_bids_estimated && (
           <>
-            <span className="block mt-1 text-yellow-400/80">
+            <span className="block mt-1 text-amber-600/80 dark:text-yellow-400/80">
               * 네이버 API에서 실제 순위별 입찰가를 제공하지 않아, 최소 입찰가에 순위별 가중치(1위 5.0배 ~ 5위 1.3배)를 적용한 추정값입니다. 실제 입찰가와 차이가 있을 수 있습니다.
             </span>
             {(scraperStatus === 'idle' || scraperStatus === 'error' || scraperStatus === 'done') && (

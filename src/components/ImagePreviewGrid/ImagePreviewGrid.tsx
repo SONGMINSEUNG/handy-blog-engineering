@@ -80,7 +80,7 @@ export default function ImagePreviewGrid({
 
   if (images.length === 0) {
     return (
-      <div className="text-center py-6 text-dark-muted text-sm">
+      <div className="text-center py-6 text-gray-900 dark:text-gray-400 text-sm">
         {emptyMessage}
       </div>
     );
@@ -89,7 +89,7 @@ export default function ImagePreviewGrid({
   return (
     <div>
       {title && (
-        <h3 className="text-sm font-medium text-dark-muted mb-3">{title}</h3>
+        <h3 className="text-sm font-medium text-gray-900 dark:text-gray-400 mb-3">{title}</h3>
       )}
       <div className={`flex flex-wrap gap-3 overflow-y-auto ${maxHeight} p-1`}>
         {images.map((img, idx) => {
@@ -100,11 +100,11 @@ export default function ImagePreviewGrid({
           return (
             <div
               key={idx}
-              className="relative group w-24 h-24 rounded-lg overflow-hidden border border-dark-border bg-dark-bg flex-shrink-0"
+              className="relative group w-24 h-24 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#0f0f0f] flex-shrink-0"
             >
               {/* Loading state */}
               {isLoading && !isFailed && (
-                <div className="absolute inset-0 flex items-center justify-center bg-dark-bg z-10">
+                <div className="absolute inset-0 flex items-center justify-center bg-gray-50 dark:bg-[#0f0f0f] z-10">
                   <div className="w-5 h-5 border-2 border-naver-green border-t-transparent rounded-full animate-spin"></div>
                 </div>
               )}
@@ -121,8 +121,8 @@ export default function ImagePreviewGrid({
                   onLoad={() => handleImageLoad(idx)}
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center bg-dark-bg">
-                  <span className="text-dark-muted text-xs text-center px-1">로드 실패</span>
+                <div className="w-full h-full flex items-center justify-center bg-gray-50 dark:bg-[#0f0f0f]">
+                  <span className="text-gray-900 dark:text-gray-400 text-xs text-center px-1">로드 실패</span>
                 </div>
               )}
 
@@ -147,7 +147,7 @@ export default function ImagePreviewGrid({
               {/* Hover: show alt text */}
               {img.alt && (
                 <div className="absolute inset-x-0 bottom-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity p-1">
-                  <div className="text-[10px] text-gray-300 truncate">{img.alt}</div>
+                  <div className="text-[10px] text-white/90 truncate">{img.alt}</div>
                 </div>
               )}
             </div>

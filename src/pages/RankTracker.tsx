@@ -537,7 +537,7 @@ function RankTracker({ userId }: RankTrackerProps) {
       return (
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 border-2 border-naver-green border-t-transparent rounded-full animate-spin"></div>
-          <span className="text-dark-muted text-sm">확인 중...</span>
+          <span className="text-gray-900 dark:text-gray-400 text-sm">확인 중...</span>
         </div>
       );
     }
@@ -560,7 +560,7 @@ function RankTracker({ userId }: RankTrackerProps) {
         );
       } else {
         return (
-          <span className="px-2 py-1 bg-dark-border text-dark-muted rounded text-sm">
+          <span className="px-2 py-1 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-400 rounded text-sm">
             순위권 밖
           </span>
         );
@@ -574,21 +574,21 @@ function RankTracker({ userId }: RankTrackerProps) {
     <div className="p-6 max-w-6xl mx-auto">
       <h1 className="text-2xl font-bold mb-2">순위 추적</h1>
 
-      <p className="text-dark-muted text-sm mb-6">
+      <p className="text-gray-900 dark:text-gray-400 text-sm mb-6">
         블로그를 등록하고, 글별 키워드 순위를 추적합니다. 최대 10개 블로그 등록 가능.
       </p>
 
       {/* ===== 등록된 블로그 탭 ===== */}
       {accounts.length > 0 && (
         <div className="flex flex-wrap items-center gap-2 mb-4">
-          <span className="text-dark-muted text-sm mr-1">등록된 블로그:</span>
+          <span className="text-gray-900 dark:text-gray-400 text-sm mr-1">등록된 블로그:</span>
           {accounts.map((acc) => (
             <div
               key={acc}
               className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm cursor-pointer transition ${
                 activeBlogId === acc
                   ? 'bg-naver-green text-white'
-                  : 'bg-dark-bg border border-dark-border text-dark-muted hover:border-naver-green hover:text-dark-text'
+                  : 'bg-gray-50 dark:bg-[#0f0f0f] border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-400 hover:border-naver-green hover:text-gray-900 dark:hover:text-gray-100'
               }`}
             >
               <span onClick={() => handleSelectBlog(acc)}>{acc}</span>
@@ -605,7 +605,7 @@ function RankTracker({ userId }: RankTrackerProps) {
             </div>
           ))}
           {accounts.length < 10 && (
-            <span className="text-dark-muted text-xs ml-2">
+            <span className="text-gray-900 dark:text-gray-400 text-xs ml-2">
               ({accounts.length}/10)
             </span>
           )}
@@ -620,7 +620,7 @@ function RankTracker({ userId }: RankTrackerProps) {
           onChange={(e) => setBlogIdInput(e.target.value)}
           onKeyDown={handleBlogInputKeyDown}
           placeholder="블로그 ID 또는 URL 입력 (예: myblog123 또는 blog.naver.com/myblog123)"
-          className="flex-1 px-4 py-3 bg-dark-bg border border-dark-border rounded-lg text-dark-text placeholder-dark-muted focus:outline-none focus:border-naver-green"
+          className="flex-1 px-4 py-3 bg-gray-50 dark:bg-[#0f0f0f] border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-naver-green"
         />
         <button
           onClick={handleAddBlog}
@@ -635,7 +635,7 @@ function RankTracker({ userId }: RankTrackerProps) {
       {activeBlogId && (
         <div className="flex items-center gap-4 mb-6">
           <div className="flex items-center gap-2">
-            <span className="text-dark-muted text-sm">글 개수:</span>
+            <span className="text-gray-900 dark:text-gray-400 text-sm">글 개수:</span>
             {([30, 60, 90] as const).map((count) => (
               <button
                 key={count}
@@ -643,7 +643,7 @@ function RankTracker({ userId }: RankTrackerProps) {
                 className={`px-3 py-1.5 text-sm rounded transition ${
                   postCount === count
                     ? 'bg-naver-green text-white'
-                    : 'bg-dark-bg border border-dark-border text-dark-muted hover:border-naver-green hover:text-dark-text'
+                    : 'bg-gray-50 dark:bg-[#0f0f0f] border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-400 hover:border-naver-green hover:text-gray-900 dark:hover:text-gray-100'
                 }`}
               >
                 {count}개
@@ -669,9 +669,9 @@ function RankTracker({ userId }: RankTrackerProps) {
 
       {/* 로딩 */}
       {loading && (
-        <div className="flex flex-col items-center justify-center py-12">
+        <div className="flex flex-col items-center justify-center" style={{minHeight: 'calc(100vh - 300px)'}}>
           <div className="w-12 h-12 border-4 border-naver-green border-t-transparent rounded-full animate-spin"></div>
-          <p className="mt-4 text-dark-muted text-sm">블로그 글 목록 불러오는 중...</p>
+          <p className="mt-4 text-gray-900 dark:text-gray-400 text-sm">블로그 글 목록 불러오는 중...</p>
         </div>
       )}
 
@@ -679,10 +679,10 @@ function RankTracker({ userId }: RankTrackerProps) {
       {!loading && posts.length > 0 && (
         <div className="glass-card overflow-hidden">
           {/* 헤더 */}
-          <div className="px-6 py-4 border-b border-dark-border flex items-center justify-between">
+          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
             <div>
               <h2 className="text-lg font-semibold">{activeBlogId} 글 목록</h2>
-              <p className="text-dark-muted text-sm mt-1">
+              <p className="text-gray-900 dark:text-gray-400 text-sm mt-1">
                 총 {totalCount}개 글
               </p>
             </div>
@@ -698,13 +698,13 @@ function RankTracker({ userId }: RankTrackerProps) {
           <div className="overflow-x-auto">
             <table className="w-full text-sm table-fixed">
               <thead>
-                <tr className="border-b border-dark-border bg-dark-bg/50">
-                  <th className="px-2 py-3 text-left text-dark-muted w-10">#</th>
-                  <th className="px-2 py-3 text-left text-dark-muted">글 제목</th>
-                  <th className="px-2 py-3 text-left text-dark-muted w-[160px]">키워드</th>
-                  <th className="px-2 py-3 text-right text-dark-muted w-[100px]">검색수</th>
-                  <th className="px-2 py-3 text-left text-dark-muted w-[180px]">순위</th>
-                  <th className="px-2 py-3 text-center text-dark-muted w-[60px]"></th>
+                <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-[#0f0f0f]/50">
+                  <th className="px-2 py-3 text-left text-gray-900 dark:text-gray-400 w-10">#</th>
+                  <th className="px-2 py-3 text-left text-gray-900 dark:text-gray-400">글 제목</th>
+                  <th className="px-2 py-3 text-left text-gray-900 dark:text-gray-400 w-[160px]">키워드</th>
+                  <th className="px-2 py-3 text-right text-gray-900 dark:text-gray-400 w-[100px]">검색수</th>
+                  <th className="px-2 py-3 text-left text-gray-900 dark:text-gray-400 w-[180px]">순위</th>
+                  <th className="px-2 py-3 text-center text-gray-900 dark:text-gray-400 w-[60px]"></th>
                 </tr>
               </thead>
               <tbody>
@@ -715,12 +715,12 @@ function RankTracker({ userId }: RankTrackerProps) {
                   return (
                     <tr
                       key={post.log_no}
-                      className={`border-b border-dark-border/30 hover:bg-dark-hover transition ${
+                      className={`border-b border-gray-200/30 dark:border-gray-700/30 hover:bg-gray-100 dark:hover:bg-[#252525] transition ${
                         hasResult ? 'bg-green-600/5' : ''
                       }`}
                     >
                       {/* 번호 */}
-                      <td className="px-2 py-2 text-dark-muted w-10">{idx + 1}</td>
+                      <td className="px-2 py-2 text-gray-900 dark:text-gray-400 w-10">{idx + 1}</td>
 
                       {/* 글 제목 */}
                       <td className="px-2 py-2">
@@ -744,12 +744,12 @@ function RankTracker({ userId }: RankTrackerProps) {
                             onChange={(e) => handleKeywordChange(post.log_no, e.target.value)}
                             onKeyDown={(e) => handleKeywordKeyDown(e, post.log_no)}
                             placeholder="키워드"
-                            className="flex-1 min-w-0 px-2 py-1 bg-dark-bg border border-dark-border rounded text-dark-text text-xs placeholder-dark-muted focus:outline-none focus:border-naver-green"
+                            className="flex-1 min-w-0 px-2 py-1 bg-gray-50 dark:bg-[#0f0f0f] border border-gray-200 dark:border-gray-700 rounded text-gray-900 dark:text-gray-100 text-xs placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-naver-green"
                           />
                           {state?.keyword && (
                             <button
                               onClick={() => handleKeywordClear(post.log_no)}
-                              className="px-1 py-1 text-dark-muted text-xs rounded hover:text-red-400 hover:bg-red-500/10 transition flex-shrink-0"
+                              className="px-1 py-1 text-gray-900 dark:text-gray-400 text-xs rounded hover:text-red-400 hover:bg-red-500/10 transition flex-shrink-0"
                               title="키워드 삭제"
                             >
                               x
@@ -761,11 +761,11 @@ function RankTracker({ userId }: RankTrackerProps) {
                       {/* 검색수 */}
                       <td className="px-2 py-2 text-right w-[100px]">
                         {state?.searchVolume != null ? (
-                          <span className="text-xs text-dark-muted whitespace-nowrap">
+                          <span className="text-xs text-gray-900 dark:text-gray-400 whitespace-nowrap">
                             {state.searchVolume.toLocaleString()}
                           </span>
                         ) : state?.loading ? (
-                          <span className="text-xs text-dark-muted">-</span>
+                          <span className="text-xs text-gray-900 dark:text-gray-400">-</span>
                         ) : null}
                       </td>
 
@@ -795,7 +795,7 @@ function RankTracker({ userId }: RankTrackerProps) {
       {!loading && posts.length === 0 && !error && (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <svg
-            className="w-16 h-16 text-dark-muted mb-4"
+            className="w-16 h-16 text-gray-900 dark:text-gray-400 mb-4"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -809,8 +809,8 @@ function RankTracker({ userId }: RankTrackerProps) {
           </svg>
           {accounts.length === 0 ? (
             <>
-              <p className="text-dark-muted text-lg mb-2">블로그를 등록해주세요</p>
-              <p className="text-dark-muted text-sm">
+              <p className="text-gray-900 dark:text-gray-400 text-lg mb-2">블로그를 등록해주세요</p>
+              <p className="text-gray-900 dark:text-gray-400 text-sm">
                 상단에 블로그 ID를 입력하고 등록 버튼을 누르세요.
                 <br />
                 최대 10개 블로그를 등록하고 순위를 추적할 수 있습니다.
@@ -818,8 +818,8 @@ function RankTracker({ userId }: RankTrackerProps) {
             </>
           ) : (
             <>
-              <p className="text-dark-muted text-lg mb-2">글 목록을 불러오세요</p>
-              <p className="text-dark-muted text-sm">
+              <p className="text-gray-900 dark:text-gray-400 text-lg mb-2">글 목록을 불러오세요</p>
+              <p className="text-gray-900 dark:text-gray-400 text-sm">
                 &quot;글 목록 불러오기&quot; 버튼을 눌러 블로그 글 목록을 불러옵니다.
                 <br />
                 각 글에 키워드를 입력하여 네이버 검색 순위를 확인할 수 있습니다.

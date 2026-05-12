@@ -73,18 +73,18 @@ export default function ResultsTable({ results, onKeywordClick }: ResultsTablePr
     <div className="w-full overflow-x-auto">
       <table className="w-full border-collapse text-sm">
         <thead className="sticky top-0 z-10">
-          <tr className="bg-dark-card border-b border-dark-border">
-            <th className="px-4 py-3 text-left font-medium text-dark-muted whitespace-nowrap sticky left-0 bg-dark-card">키워드</th>
-            <th className="px-3 py-3 text-center font-medium text-dark-muted whitespace-nowrap">PC</th>
-            <th className="px-3 py-3 text-center font-medium text-dark-muted whitespace-nowrap">모바일</th>
-            <th className="px-3 py-3 text-center font-medium text-dark-muted whitespace-nowrap">월 검색량</th>
-            <th className="px-3 py-3 text-center font-medium text-dark-muted whitespace-nowrap">월 발행수</th>
-            <th className="px-3 py-3 text-center font-medium text-dark-muted whitespace-nowrap">파워링크</th>
-            <th className="px-3 py-3 text-center font-medium text-dark-muted whitespace-nowrap">AI추천</th>
-            <th className="px-3 py-3 text-left font-medium text-dark-muted whitespace-nowrap min-w-[200px]">섹션순서</th>
+          <tr className="bg-white dark:bg-[#1a1a1a] border-b border-gray-200 dark:border-gray-700">
+            <th className="px-4 py-3 text-left font-medium text-gray-900 dark:text-gray-400 whitespace-nowrap sticky left-0 bg-white dark:bg-[#1a1a1a]">키워드</th>
+            <th className="px-3 py-3 text-center font-medium text-gray-900 dark:text-gray-400 whitespace-nowrap">PC</th>
+            <th className="px-3 py-3 text-center font-medium text-gray-900 dark:text-gray-400 whitespace-nowrap">모바일</th>
+            <th className="px-3 py-3 text-center font-medium text-gray-900 dark:text-gray-400 whitespace-nowrap">월 검색량</th>
+            <th className="px-3 py-3 text-center font-medium text-gray-900 dark:text-gray-400 whitespace-nowrap">월 발행수</th>
+            <th className="px-3 py-3 text-center font-medium text-gray-900 dark:text-gray-400 whitespace-nowrap">파워링크</th>
+            <th className="px-3 py-3 text-center font-medium text-gray-900 dark:text-gray-400 whitespace-nowrap">AI추천</th>
+            <th className="px-3 py-3 text-left font-medium text-gray-900 dark:text-gray-400 whitespace-nowrap min-w-[200px]">섹션순서</th>
             {/* 동적으로 순위 컬럼 생성 */}
             {Array.from({ length: maxRanks }, (_, i) => (
-              <th key={i} className="px-2 py-3 text-center font-medium text-dark-muted whitespace-nowrap">
+              <th key={i} className="px-2 py-3 text-center font-medium text-gray-900 dark:text-gray-400 whitespace-nowrap">
                 {i + 1}위
               </th>
             ))}
@@ -101,12 +101,12 @@ export default function ResultsTable({ results, onKeywordClick }: ResultsTablePr
             return (
               <tr
                 key={result.keyword}
-                className={`border-b border-dark-border hover:bg-dark-hover transition ${
-                  index % 2 === 0 ? 'bg-dark-bg' : 'bg-dark-card/30'
+                className={`border-b border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-[#252525] transition ${
+                  index % 2 === 0 ? 'bg-gray-50 dark:bg-[#0f0f0f]' : 'bg-white/30 dark:bg-[#1a1a1a]/30'
                 }`}
               >
                 {/* 키워드 */}
-                <td className="px-4 py-3 font-medium text-dark-text whitespace-nowrap sticky left-0 bg-inherit">
+                <td className="px-4 py-3 font-medium text-gray-900 dark:text-gray-100 whitespace-nowrap sticky left-0 bg-inherit">
                   {result.error ? (
                     <span className="text-red-400">{result.keyword}</span>
                   ) : onKeywordClick ? (
@@ -123,17 +123,17 @@ export default function ResultsTable({ results, onKeywordClick }: ResultsTablePr
                 </td>
 
                 {/* PC 조회수 */}
-                <td className="px-3 py-3 text-center text-gray-300">
+                <td className="px-3 py-3 text-center text-gray-900 dark:text-gray-100">
                   {formatNumber(searchVolume?.pc)}
                 </td>
 
                 {/* 모바일 조회수 */}
-                <td className="px-3 py-3 text-center text-gray-300">
+                <td className="px-3 py-3 text-center text-gray-900 dark:text-gray-100">
                   {formatNumber(searchVolume?.mobile)}
                 </td>
 
                 {/* 월 검색량 */}
-                <td className="px-3 py-3 text-center text-gray-300 font-medium">
+                <td className="px-3 py-3 text-center text-gray-900 dark:text-gray-100 font-medium">
                   {formatNumber(searchVolume?.total)}
                 </td>
 
@@ -141,7 +141,7 @@ export default function ResultsTable({ results, onKeywordClick }: ResultsTablePr
                 <td className="px-3 py-3 text-center text-orange-400">
                   {searchVolume?.monthly_blog_count != null
                     ? formatNumber(searchVolume.monthly_blog_count)
-                    : <span className="text-gray-500">-</span>
+                    : <span className="text-gray-900 dark:text-gray-400">-</span>
                   }
                 </td>
 
@@ -150,7 +150,7 @@ export default function ResultsTable({ results, onKeywordClick }: ResultsTablePr
                   {result.ad_count > 0 ? (
                     <span className="text-red-400 font-medium">{result.ad_count}개</span>
                   ) : (
-                    <span className="text-gray-500">없음</span>
+                    <span className="text-gray-900 dark:text-gray-400">없음</span>
                   )}
                 </td>
 
@@ -167,7 +167,7 @@ export default function ResultsTable({ results, onKeywordClick }: ResultsTablePr
                       </span>
                     </div>
                   ) : (
-                    <span className="text-gray-500">없음</span>
+                    <span className="text-gray-900 dark:text-gray-400">없음</span>
                   )}
                 </td>
 
@@ -176,7 +176,7 @@ export default function ResultsTable({ results, onKeywordClick }: ResultsTablePr
                   {sectionOrder.length > 0 ? (
                     <div className="flex flex-nowrap gap-1 overflow-x-auto whitespace-nowrap">
                       {sectionOrder.map((sec, idx) => {
-                        const sectionConfig = sectionTypeLabels[sec.type] || { label: sec.type, bgColor: 'bg-gray-700', textColor: 'text-gray-200' };
+                        const sectionConfig = sectionTypeLabels[sec.type] || { label: sec.type, bgColor: 'bg-gray-500', textColor: 'text-white' };
                         return (
                           <span
                             key={idx}
@@ -188,7 +188,7 @@ export default function ResultsTable({ results, onKeywordClick }: ResultsTablePr
                       })}
                     </div>
                   ) : (
-                    <span className="text-gray-500">-</span>
+                    <span className="text-gray-900 dark:text-gray-400">-</span>
                   )}
                 </td>
 
@@ -212,7 +212,7 @@ export default function ResultsTable({ results, onKeywordClick }: ResultsTablePr
                           {config.label}
                         </a>
                       ) : (
-                        <span className="text-gray-600">-</span>
+                        <span className="text-gray-900 dark:text-gray-400">-</span>
                       )}
                     </td>
                   );
@@ -224,14 +224,14 @@ export default function ResultsTable({ results, onKeywordClick }: ResultsTablePr
       </table>
 
       {results.length === 0 && (
-        <div className="text-center py-12 text-dark-muted">
+        <div className="text-center py-12 text-gray-900 dark:text-gray-400">
           분석 결과가 없습니다.
         </div>
       )}
 
       {/* 범례 */}
-      <div className="mt-4 p-4 bg-dark-card/50 rounded-lg">
-        <h4 className="text-sm font-medium text-dark-muted mb-3">타입 범례</h4>
+      <div className="mt-4 p-4 bg-white/50 dark:bg-[#1a1a1a]/50 rounded-lg">
+        <h4 className="text-sm font-medium text-gray-900 dark:text-gray-400 mb-3">타입 범례</h4>
         <div className="flex flex-wrap gap-2">
           {Object.entries(typeConfig).filter(([key]) => key !== 'unknown').map(([key, config]) => (
             <span
