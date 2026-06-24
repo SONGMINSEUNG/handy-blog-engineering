@@ -649,6 +649,22 @@ export async function diagnoseBlog(blogId: string, count: number = 30): Promise<
   return response.data;
 }
 
+// 블로그 글 검색 노출 여부 판별 (네이버 공식 블로그검색 API 기반)
+export interface BlogExposureItem {
+  url: string;
+  log_no: string;
+  exposed: boolean | null;  // true=노출, false=미노출, null=판별불가
+}
+
+export async function checkBlogExposure(
+  posts: { title: string; url: string }[]
+): Promise<BlogExposureItem[]> {
+  const response = await api.post('/blog/check-exposure', {
+    posts: posts.map((p) => ({ title: p.title, url: p.url })),
+  });
+  return response.data.results || [];
+}
+
 // Post Diagnose
 export async function diagnosePost(url: string, targetKeyword?: string): Promise<PostDiagnoseResult> {
   const response = await api.post('/post/diagnose', {

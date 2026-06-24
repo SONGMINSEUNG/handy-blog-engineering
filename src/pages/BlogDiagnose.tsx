@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { diagnoseBlog, BlogDiagnoseResult, VisitorHistoryItem } from '../services/api';
+import { diagnoseBlog, checkBlogExposure, BlogDiagnoseResult, VisitorHistoryItem } from '../services/api';
 
 // 방문자 그래프 탭 타입
 type VisitorTab = 'daily' | 'weekly' | 'monthly';
@@ -328,6 +328,9 @@ export default function BlogDiagnose({ onNavigateToPostDiagnose }: BlogDiagnoseP
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<BlogDiagnoseResult | null>(null);
   const [error, setError] = useState('');
+  // 글별 검색 노출 여부 (url -> true=노출 / false=미노출 / null=판별불가)
+  const [exposureMap, setExposureMap] = useState<Record<string, boolean | null>>({});
+  const [exposureLoading, setExposureLoading] = useState(false);
 
   const handleDiagnose = async () => {
     if (!blogId.trim()) {
@@ -345,10 +348,24 @@ export default function BlogDiagnose({ onNavigateToPostDiagnose }: BlogDiagnoseP
     setLoading(true);
     setError('');
     setResult(null);
+    setExposureMap({});
 
     try {
       const response = await diagnoseBlog(extractedId, postCount);
       setResult(response);
+
+      // 글 검색 노출 여부 판별 (별도 호출, 진단 표시를 막지 않음)
+      if (response.posts && response.posts.length > 0) {
+        setExposureLoading(true);
+        checkBlogExposure(response.posts.map((p) => ({ title: p.title, url: p.url })))
+          .then((items) => {
+            const map: Record<string, boolean | null> = {};
+            items.forEach((it) => { map[it.url] = it.exposed; });
+            setExposureMap(map);
+          })
+          .catch(() => { /* 노출 판별 실패는 진단 결과에 영향 없음 */ })
+          .finally(() => setExposureLoading(false));
+      }
     } catch (err: any) {
       setError(err.response?.data?.detail || '블로그 진단 중 오류가 발생했습니다.');
     } finally {
@@ -537,6 +554,21 @@ export default function BlogDiagnose({ onNavigateToPostDiagnose }: BlogDiagnoseP
                           {post.title || '(제목 없음)'}
                         </a>
                         <span className="text-sm text-gray-900 dark:text-gray-400 whitespace-nowrap shrink-0">{post.date}</span>
+                        {!post.is_notice && (
+                          exposureMap[post.url] === true ? (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-green-500/20 text-green-500 border border-green-500/30 shrink-0 whitespace-nowrap">
+                              검색 노출
+                            </span>
+                          ) : exposureMap[post.url] === false ? (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-red-500/20 text-red-400 border border-red-500/30 shrink-0 whitespace-nowrap">
+                              미노출
+                            </span>
+                          ) : exposureLoading ? (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs text-gray-400 border border-gray-500/30 shrink-0 whitespace-nowrap">
+                              노출 확인중…
+                            </span>
+                          ) : null
+                        )}
                         {post.comment_count > 0 && (
                           <span className="text-sm text-gray-900 dark:text-gray-400 whitespace-nowrap shrink-0">댓글 {post.comment_count}</span>
                         )}

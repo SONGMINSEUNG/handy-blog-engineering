@@ -806,13 +806,15 @@ function App() {
                                           return (
                                             <tr
                                               key={idx}
-                                              className={`border-b border-gray-200/30 dark:border-gray-700/30 hover:bg-gray-100 dark:hover:bg-[#252525] ${
+                                              onClick={() => handleKeywordClick(item.keyword)}
+                                              title="클릭하면 키워드 조회로 이동합니다"
+                                              className={`border-b border-gray-200/30 dark:border-gray-700/30 hover:bg-gray-100 dark:hover:bg-[#252525] cursor-pointer ${
                                                 isAnalyzed ? 'bg-naver-green/10' : isTop ? 'bg-yellow-500/5' : ''
                                               }`}
                                             >
                                               <td className="px-4 py-2.5 text-gray-900 dark:text-gray-400">{idx + 1}</td>
                                               <td className="px-4 py-2.5">
-                                                <span className={`${isAnalyzed ? 'text-naver-green font-bold' : isTop ? 'text-amber-600 dark:text-yellow-400 font-medium' : 'text-gray-900 dark:text-gray-100'}`}>
+                                                <span className={`hover:underline ${isAnalyzed ? 'text-naver-green font-bold' : isTop ? 'text-amber-600 dark:text-yellow-400 font-medium' : 'text-gray-900 dark:text-gray-100'}`}>
                                                   {item.keyword}
                                                 </span>
                                                 {isAnalyzed && (
