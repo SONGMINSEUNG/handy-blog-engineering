@@ -8,6 +8,7 @@ import BlogDiagnose from './pages/BlogDiagnose';
 import PostDiagnose from './pages/PostDiagnose';
 import MorphemeAnalyze from './pages/MorphemeAnalyze';
 import RankTracker from './pages/RankTracker';
+import BidAnalysis from './pages/BidAnalysis';
 // @ts-ignore
 import SettingsButton from './components/Settings/SettingsButton';
 import ApiSettingsModal from './components/Settings/ApiSettingsModal';
@@ -32,7 +33,7 @@ import {
 } from './services/api';
 
 type AppStatus = 'connecting' | 'ready' | 'waiting_login' | 'analyzing' | 'completed' | 'error';
-type TabType = 'keyword' | 'blog' | 'post' | 'morpheme' | 'batch' | 'rank';
+type TabType = 'keyword' | 'blog' | 'post' | 'morpheme' | 'batch' | 'rank' | 'bidanalysis';
 
 function App() {
   // ===== 앱 레벨 인증 상태 =====
@@ -603,6 +604,9 @@ function App() {
 
             {/* 형태소 진단 */}
             {activeTab === 'morpheme' && <MorphemeAnalyze />}
+
+            {/* 광고입찰가 분석 */}
+            {activeTab === 'bidanalysis' && <BidAnalysis onOpenSettings={handleOpenSettings} />}
 
             {/* 대량 조회 (기존 기능) */}
             {activeTab === 'batch' && (

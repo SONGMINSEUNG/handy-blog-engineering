@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 
-type TabType = 'keyword' | 'blog' | 'post' | 'morpheme' | 'batch' | 'rank';
+type TabType = 'keyword' | 'blog' | 'post' | 'morpheme' | 'batch' | 'rank' | 'bidanalysis';
 
 interface SidebarProps {
   activeTab: TabType;
@@ -41,6 +41,11 @@ const menuItems: Array<{ id: TabType; label: string; icon: string }> = [
     id: 'morpheme',
     label: '형태소 진단',
     icon: 'M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129',
+  },
+  {
+    id: 'bidanalysis',
+    label: '광고입찰가 분석',
+    icon: 'M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z',
   },
 ];
 

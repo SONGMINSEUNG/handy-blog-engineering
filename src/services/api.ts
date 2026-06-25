@@ -643,6 +643,34 @@ export async function healthCheck(): Promise<boolean> {
   }
 }
 
+// 광고입찰가 분석 (대량)
+export interface RankBid {
+  rank: number;
+  bid: number;
+}
+
+export interface FullKeywordData {
+  keyword: string;
+  pc_search_volume: number | null;
+  mobile_search_volume: number | null;
+  pc_click_count: number | null;
+  mobile_click_count: number | null;
+  pc_click_rate: number | null;
+  mobile_click_rate: number | null;
+  competition: string | null;
+  competition_index: number | null;
+  pc_minimum_bid: number | null;
+  mobile_minimum_bid: number | null;
+  pc_rank_bids: RankBid[];
+  mobile_rank_bids: RankBid[];
+  error: string | null;
+}
+
+export async function bulkBidAnalysis(keywords: string[]): Promise<FullKeywordData[]> {
+  const response = await api.post('/bid/bulk-full', { keywords });
+  return response.data.results || [];
+}
+
 // Blog Diagnose
 export async function diagnoseBlog(blogId: string, count: number = 30): Promise<BlogDiagnoseResult> {
   const response = await api.post('/blog/diagnose', { blog_id: blogId, count });
