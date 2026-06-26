@@ -33,6 +33,24 @@ import {
 } from './services/api';
 
 type AppStatus = 'connecting' | 'ready' | 'waiting_login' | 'analyzing' | 'completed' | 'error';
+// 연관검색어가 있는 키워드를 찾아 반환.
+// 롱테일/구체 키워드는 연관검색어가 없으므로(자기 자신만, total_count<=1),
+// 입력 키워드를 앞에서부터 최대 5개까지 시도해 연관검색어가 있는 첫 키워드 결과를 사용한다.
+async function fetchBatchRelatedWithFallback(keywords: string[]): Promise<RelatedKeywordsResponse | null> {
+  let firstResult: RelatedKeywordsResponse | null = null;
+  for (const kw of keywords.slice(0, 5)) {
+    if (!kw || !kw.trim()) continue;
+    try {
+      const data = await getRelatedKeywords(kw.trim());
+      if (firstResult === null) firstResult = data;
+      if ((data.total_count || 0) > 1) return data; // 의미있는 연관검색어 발견
+    } catch {
+      // 실패 시 다음 키워드 시도
+    }
+  }
+  return firstResult;
+}
+
 type TabType = 'keyword' | 'blog' | 'post' | 'morpheme' | 'batch' | 'rank' | 'bidanalysis';
 
 function App() {
@@ -273,10 +291,9 @@ function App() {
   // 분석 완료 시 연관 키워드 자동 조회
   useEffect(() => {
     if (appStatus === 'completed' && results.length > 0 && batchRelatedEnabled && isApiConfigured) {
-      const firstKeyword = results[0].keyword;
       setBatchRelatedLoading(true);
       setBatchRelatedError(null);
-      getRelatedKeywords(firstKeyword.trim())
+      fetchBatchRelatedWithFallback(results.map((r) => r.keyword))
         .then((data) => {
           setBatchRelatedKeywords(data);
         })
@@ -303,8 +320,8 @@ function App() {
     setBatchRelatedError(null);
 
     try {
-      // 첫 번째 키워드 기준으로 연관 키워드 조회
-      const data = await getRelatedKeywords(searchKeywords[0].trim());
+      // 연관검색어가 있는 키워드를 앞에서부터 찾아 조회 (롱테일 키워드 폴백)
+      const data = await fetchBatchRelatedWithFallback(searchKeywords);
       setBatchRelatedKeywords(data);
     } catch {
       setBatchRelatedError('연관 키워드를 조회하지 못했습니다.');
