@@ -21,6 +21,7 @@ function parseKeywords(text: string): string[] {
 
 const won = (n: number) => Math.round(n).toLocaleString('ko-KR') + '원';
 const num = (n: number | null | undefined) => (n ?? 0).toLocaleString('ko-KR');
+const pct = (n: number | null | undefined) => (n ?? 0).toLocaleString('ko-KR', { maximumFractionDigits: 2 }) + '%';
 
 // 순위 번호 뱃지 색상 (레퍼런스: 1위 빨강, 2위 주황, 3위 노랑, 4/5위 회색)
 const rankBadge = (rank: number) => {
@@ -43,13 +44,12 @@ const gradeStyle: Record<string, string> = {
 
 interface AnalyzedRow {
   data: FullKeywordData;
-  pcClicks: number;
-  moClicks: number;
+  pcClicks: number;   // 월 예상 클릭 (PC)
+  moClicks: number;   // 월 예상 클릭 (Mobile)
   totalSearch: number;
-  avgCpc: number;
-  score: number;
+  avgCpc: number;     // 평균 클릭단가 (1~5위 PC+Mobile 평균)
+  score: number;      // 효율 점수 = 검색량 / 평균단가
   grade: string;
-  rankCost: (rank: number) => { pcBid: number; moBid: number; pc: number; mobile: number; total: number };
 }
 
 export default function BidAnalysis({ onOpenSettings }: BidAnalysisProps) {
@@ -92,43 +92,26 @@ export default function BidAnalysis({ onOpenSettings }: BidAnalysisProps) {
 
   // 계산 + 효율 등급(배치 내 상대 평가)
   const rows: AnalyzedRow[] = useMemo(() => {
-    const base = results.map((r) => {
+    const base: AnalyzedRow[] = results.map((r) => {
       const pcClicks = r.pc_click_count ?? Math.round((r.pc_search_volume || 0) * (r.pc_click_rate || 0) / 100);
       const moClicks = r.mobile_click_count ?? Math.round((r.mobile_search_volume || 0) * (r.mobile_click_rate || 0) / 100);
       const totalSearch = (r.pc_search_volume || 0) + (r.mobile_search_volume || 0);
       const allBids = [...r.pc_rank_bids.map((b) => b.bid), ...r.mobile_rank_bids.map((b) => b.bid)].filter((b) => b > 0);
       const avgCpc = allBids.length ? Math.round(allBids.reduce((a, b) => a + b, 0) / allBids.length) : 0;
       const score = avgCpc > 0 ? totalSearch / avgCpc : 0;
-      const rankCost = (rank: number) => {
-        const pcBid = r.pc_rank_bids.find((b) => b.rank === rank)?.bid || 0;
-        const moBid = r.mobile_rank_bids.find((b) => b.rank === rank)?.bid || 0;
-        const pc = pcClicks * pcBid;
-        const mobile = moClicks * moBid;
-        return { pcBid, moBid, pc, mobile, total: pc + mobile };
-      };
-      return { data: r, pcClicks, moClicks, totalSearch, avgCpc, score, rankCost, grade: '-' };
+      return { data: r, pcClicks, moClicks, totalSearch, avgCpc, score, grade: '-' };
     });
 
-    // 효율 점수 기준 상대 등급 (검색량 대비 단가가 좋을수록 A+)
+    // 효율 점수(검색량 ÷ 평균단가) 기준 상대 등급
     const scored = base.filter((b) => b.score > 0).sort((a, b) => b.score - a.score);
     const n = scored.length;
     scored.forEach((row, idx) => {
-      const pct = n > 1 ? idx / (n - 1) : 0;
-      row.grade = pct <= 0.2 ? 'A+' : pct <= 0.4 ? 'A' : pct <= 0.6 ? 'B' : pct <= 0.8 ? 'C' : 'D';
+      const p = n > 1 ? idx / (n - 1) : 0;
+      row.grade = p <= 0.2 ? 'A+' : p <= 0.4 ? 'A' : p <= 0.6 ? 'B' : p <= 0.8 ? 'C' : 'D';
     });
 
     return sortByEff ? [...base].sort((a, b) => b.score - a.score) : base;
   }, [results, sortByEff]);
-
-  // 예산 역산: 예산 내 가능한 최고 순위(1위가 최상위) 찾기
-  const affordableRank = (row: AnalyzedRow): { rank: number; cost: number } | null => {
-    if (budgetNum <= 0) return null;
-    for (let r = 1; r <= 5; r++) {
-      const c = row.rankCost(r).total;
-      if (c > 0 && c <= budgetNum) return { rank: r, cost: c };
-    }
-    return null;
-  };
 
   if (isApiConfigured === false) {
     return (
@@ -146,12 +129,14 @@ export default function BidAnalysis({ onOpenSettings }: BidAnalysisProps) {
     );
   }
 
+  const budgetMode = budgetNum > 0;
+
   return (
     <div className="p-6 max-w-[1400px] mx-auto">
       <div className="mb-6">
         <h2 className="text-2xl font-bold mb-1">광고입찰가 분석</h2>
         <p className="text-sm text-gray-900 dark:text-gray-400">
-          여러 키워드의 PC/모바일 1~5위 단가와 검색량을 한 번에 조회하고, 단가별 월 예상 클릭·비용과 효율을 비교합니다.
+          여러 키워드의 PC/모바일 1~5위 단가와 검색량·클릭률을 한 번에 조회하고, 단가별 비용 또는 예산 대비 클릭 수를 비교합니다.
         </p>
       </div>
 
@@ -169,13 +154,15 @@ export default function BidAnalysis({ onOpenSettings }: BidAnalysisProps) {
         />
         <div className="flex flex-wrap items-end gap-4 mt-4">
           <div>
-            <label className="block text-xs text-gray-900 dark:text-gray-400 mb-1">키워드당 월 예산 (선택)</label>
+            <label className="block text-xs text-gray-900 dark:text-gray-400 mb-1">
+              키워드당 월 예산 (선택) — 입력 시 "이 예산이면 단가별 몇 클릭" 표시
+            </label>
             <input
               type="text"
               value={budget}
               onChange={(e) => setBudget(e.target.value)}
               placeholder="예: 1000000"
-              className="w-44 px-3 py-2 bg-gray-50 dark:bg-[#0f0f0f] rounded-lg border border-gray-200 dark:border-gray-700 outline-none focus:border-naver-green text-gray-900 dark:text-gray-100 text-sm"
+              className="w-48 px-3 py-2 bg-gray-50 dark:bg-[#0f0f0f] rounded-lg border border-gray-200 dark:border-gray-700 outline-none focus:border-naver-green text-gray-900 dark:text-gray-100 text-sm"
             />
           </div>
           <label className="flex items-center gap-2 text-sm text-gray-900 dark:text-gray-300 cursor-pointer pb-2">
@@ -197,10 +184,9 @@ export default function BidAnalysis({ onOpenSettings }: BidAnalysisProps) {
         {error && <p className="text-red-400 text-sm mt-3">{error}</p>}
       </div>
 
-      {/* 안내 */}
       {results.length === 0 && !loading && (
         <p className="text-center text-gray-500 dark:text-gray-400 py-10 text-sm">
-          키워드를 입력하고 검색하면 1~5위 단가와 예상 비용·효율이 표시됩니다.
+          키워드를 입력하고 검색하면 클릭률·1~5위 단가와 예상 비용·효율이 표시됩니다.
         </p>
       )}
       {loading && (
@@ -217,11 +203,15 @@ export default function BidAnalysis({ onOpenSettings }: BidAnalysisProps) {
               <tr className="naver-gradient text-white text-xs">
                 <th className="px-3 py-3 text-left sticky left-0 z-10 naver-gradient">키워드</th>
                 <th className="px-3 py-3 text-right">검색량<br/>(PC/모바일)</th>
+                <th className="px-3 py-3 text-right">클릭률<br/>(PC/모바일)</th>
                 <th className="px-3 py-3 text-right">월 예상클릭<br/>(PC/모바일)</th>
-                <th className="px-3 py-3 text-center">효율<br/>(클릭당 단가)</th>
-                {budgetNum > 0 && <th className="px-3 py-3 text-center">예산내<br/>가능순위</th>}
-                <th className="px-3 py-3 text-left">PC단가 → 월 예상비용</th>
-                <th className="px-3 py-3 text-left">Mobile단가 → 월 예상비용</th>
+                <th className="px-3 py-3 text-center">효율<br/>(클릭단가)</th>
+                <th className="px-3 py-3 text-left">
+                  PC단가 {budgetMode ? '→ 예산내 클릭' : '→ 월 예상비용'}
+                </th>
+                <th className="px-3 py-3 text-left">
+                  Mobile단가 {budgetMode ? '→ 예산내 클릭' : '→ 월 예상비용'}
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -231,17 +221,20 @@ export default function BidAnalysis({ onOpenSettings }: BidAnalysisProps) {
                   return (
                     <tr key={idx} className="border-b border-gray-200/40 dark:border-gray-700/40">
                       <td className="px-3 py-3 font-bold text-naver-green sticky left-0 bg-white dark:bg-[#1a1a1a]">{r.keyword}</td>
-                      <td colSpan={budgetNum > 0 ? 6 : 5} className="px-3 py-3 text-red-400 text-xs">조회 실패: {r.error}</td>
+                      <td colSpan={6} className="px-3 py-3 text-red-400 text-xs">조회 실패: {r.error}</td>
                     </tr>
                   );
                 }
-                const aff = affordableRank(row);
                 return (
                   <tr key={idx} className="border-b border-gray-200/40 dark:border-gray-700/40 hover:bg-gray-50 dark:hover:bg-[#202020]">
                     <td className="px-3 py-3 font-bold text-naver-green align-top sticky left-0 bg-white dark:bg-[#1a1a1a]">{r.keyword}</td>
                     <td className="px-3 py-3 text-right align-top font-mono text-xs">
                       <div>{num(r.pc_search_volume)}</div>
                       <div className="text-gray-500">{num(r.mobile_search_volume)}</div>
+                    </td>
+                    <td className="px-3 py-3 text-right align-top font-mono text-xs">
+                      <div>{pct(r.pc_click_rate)}</div>
+                      <div className="text-gray-500">{pct(r.mobile_click_rate)}</div>
                     </td>
                     <td className="px-3 py-3 text-right align-top font-mono text-xs">
                       <div>{num(row.pcClicks)}</div>
@@ -251,22 +244,10 @@ export default function BidAnalysis({ onOpenSettings }: BidAnalysisProps) {
                       <span className={`inline-block px-2 py-0.5 rounded border text-xs font-bold ${gradeStyle[row.grade] || gradeStyle['-']}`}>
                         {row.grade}
                       </span>
-                      <div className="text-[11px] text-gray-500 mt-1 font-mono">{won(row.avgCpc)}</div>
+                      <div className="text-[11px] text-gray-500 mt-1 font-mono" title="1~5위 평균 클릭단가">{won(row.avgCpc)}</div>
                     </td>
-                    {budgetNum > 0 && (
-                      <td className="px-3 py-3 text-center align-top text-xs">
-                        {aff ? (
-                          <>
-                            <span className="font-bold text-naver-green">{aff.rank}위</span>
-                            <div className="text-gray-500 font-mono">{won(aff.cost)}</div>
-                          </>
-                        ) : (
-                          <span className="text-red-400">예산 부족</span>
-                        )}
-                      </td>
-                    )}
-                    <td className="px-3 py-3 align-top">{renderRankCol(r.pc_rank_bids, row.rankCost, 'pc', aff?.rank)}</td>
-                    <td className="px-3 py-3 align-top">{renderRankCol(r.mobile_rank_bids, row.rankCost, 'mobile', aff?.rank)}</td>
+                    <td className="px-3 py-3 align-top">{renderRankCol(r.pc_rank_bids, row.pcClicks, budgetNum)}</td>
+                    <td className="px-3 py-3 align-top">{renderRankCol(r.mobile_rank_bids, row.moClicks, budgetNum)}</td>
                   </tr>
                 );
               })}
@@ -276,40 +257,47 @@ export default function BidAnalysis({ onOpenSettings }: BidAnalysisProps) {
       )}
 
       {results.length > 0 && (
-        <p className="text-xs text-gray-500 dark:text-gray-400 mt-3 leading-5">
-          * 월 예상클릭 = 검색량 × 클릭률 (네이버 제공). 월 예상비용 = 월 예상클릭 × 해당 순위 단가.<br/>
-          * 효율 등급은 입력한 키워드들 중 "검색량 대비 평균단가"가 좋을수록 A+ (상대 평가). 클릭당 단가는 1~5위 평균.<br/>
-          * 단가는 모바일/PC 영역별 파워링크 평균 광고단가 5위까지입니다.
-        </p>
+        <div className="text-xs text-gray-500 dark:text-gray-400 mt-3 leading-5 space-y-0.5">
+          <p>· <b>클릭률</b> = 네이버 월평균 클릭률(CTR, 노출 대비 클릭 비율). 월 클릭 횟수가 아니라 비율입니다.</p>
+          <p>· <b>월 예상클릭</b> = 검색량 × 클릭률 (네이버 월간 평균 클릭수).</p>
+          <p>· <b>예산 미입력 시</b>: 각 순위 단가 → <b>월 예상비용</b> = 월 예상클릭 × 단가.</p>
+          <p>· <b>예산 입력 시</b>: 각 순위 단가 → <b>예산내 가능 클릭</b> = 월 예산 ÷ 단가 (월 예상클릭 한도). 5위(가장 싼 단가)에서 클릭이 가장 많습니다.</p>
+          <p>· <b>효율</b> = 검색량 ÷ 평균 클릭단가. 수요가 많고 단가가 쌀수록 가성비가 좋아 A+에 가깝습니다(입력 키워드 중 상대 등급).</p>
+        </div>
       )}
     </div>
   );
 }
 
-// 순위별 단가 + 월 예상비용 컬럼 렌더
+// 순위별 단가 + (예산 미입력) 월 예상비용 / (예산 입력) 예산내 가능 클릭 렌더
 function renderRankCol(
   bids: { rank: number; bid: number }[],
-  rankCost: (rank: number) => { pcBid: number; moBid: number; pc: number; mobile: number; total: number },
-  platform: 'pc' | 'mobile',
-  highlightRank?: number,
+  monthlyClicks: number,
+  budgetNum: number,
 ) {
   if (!bids || bids.length === 0) {
     return <span className="text-gray-400 text-xs">데이터 없음</span>;
   }
+  const budgetMode = budgetNum > 0;
   return (
     <div className="space-y-0.5">
       {[...bids].sort((a, b) => a.rank - b.rank).map((b) => {
-        const c = rankCost(b.rank);
-        const cost = platform === 'pc' ? c.pc : c.mobile;
-        const isHi = highlightRank === b.rank;
+        const bid = b.bid;
+        let right: string;
+        if (budgetMode) {
+          const clicks = bid > 0 ? Math.min(Math.floor(budgetNum / bid), monthlyClicks) : 0;
+          right = `${clicks.toLocaleString('ko-KR')}클릭`;
+        } else {
+          right = won(monthlyClicks * bid);
+        }
         return (
-          <div key={b.rank} className={`flex items-center gap-2 text-xs ${isHi ? 'bg-naver-green/10 rounded px-1' : ''}`}>
+          <div key={b.rank} className="flex items-center gap-2 text-xs">
             <span className={`inline-flex items-center justify-center w-4 h-4 rounded text-[10px] font-bold ${rankBadge(b.rank)}`}>
               {b.rank}
             </span>
-            <span className="font-mono font-semibold w-20 text-right">{won(b.bid)}</span>
+            <span className="font-mono font-semibold w-20 text-right">{won(bid)}</span>
             <span className="text-gray-400">→</span>
-            <span className="font-mono text-gray-600 dark:text-gray-300">{won(cost)}</span>
+            <span className={`font-mono ${budgetMode ? 'text-naver-green font-semibold' : 'text-gray-600 dark:text-gray-300'}`}>{right}</span>
           </div>
         );
       })}
