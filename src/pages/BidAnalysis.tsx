@@ -134,10 +134,7 @@ export default function BidAnalysis({ onOpenSettings }: BidAnalysisProps) {
   return (
     <div className="p-6 max-w-[1400px] mx-auto">
       <div className="mb-6">
-        <h2 className="text-2xl font-bold mb-1">광고입찰가 분석</h2>
-        <p className="text-sm text-gray-900 dark:text-gray-400">
-          여러 키워드의 PC/모바일 1~5위 단가와 검색량·클릭률을 한 번에 조회하고, 단가별 비용 또는 예산 대비 클릭 수를 비교합니다.
-        </p>
+        <h2 className="text-2xl font-bold">광고입찰가 분석</h2>
       </div>
 
       {/* 입력 */}
